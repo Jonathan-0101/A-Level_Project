@@ -6,6 +6,12 @@ import datetime
 import sqlite3
 
 conn = sqlite3.connect('System.db', check_same_thread=False)
+conn.execute('''CREATE TABLE if not exists ENTRY_LOG
+  (ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+  Authorised BOOLEAN NOT NULL,
+  USER_ID TEXT NOT NULL,
+  DateTime DATETIME NOT NULL);''')
+conn.commit()
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
 PIR_PIN = 14
@@ -44,6 +50,11 @@ def pir(pin):
     to_check = cursor[0]
     if to_check[0] == text:
         print('Authorised')
+        Authorised = True
+        Date_time = datetime.now()
+        conn.execute("INSERT INTO ENTRY_LOG(Authorised, USER_ID, DateTime) VALUES (?,?,?)", [Authorised, id, Date_time]).lastrowid
+        conn.commit()
+
         unlock()    
     else:
         print("not authorised")
@@ -57,3 +68,4 @@ except KeyboardInterrupt:
     print('\nScript ended')
 finally:
     GPIO.cleanup()
+
