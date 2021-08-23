@@ -1,8 +1,8 @@
 import RPi.GPIO as GPIO
-import time
 from mfrc522 import SimpleMFRC522
 import sys
-import datetime
+import cv2
+from datetime import datetime
 import sqlite3
 
 conn = sqlite3.connect('System.db', check_same_thread=False)
@@ -10,7 +10,7 @@ conn.execute('''CREATE TABLE if not exists ENTRY_LOG
   (ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
   Authorised BOOLEAN NOT NULL,
   USER_ID TEXT NOT NULL,
-  DateTime DATETIME NOT NULL);''')
+  DateTime VARCHAR NOT NULL);''')
 conn.commit()
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
@@ -40,6 +40,23 @@ def unlock():
     lock()
     
 def pir(pin):
+    cap= cv2.VideoCapture(0)
+    now = datetime.now()
+    dt_string = now.strftime("%d_%m_%Y %H¦%¦%S")
+    dt_string += '.mp4'
+    width= int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    height= int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    writer= cv2.VideoWriter(dt_string, cv2.VideoWriter_fourcc(*'DIVX'), 20, (width,height))
+    while True:
+        ret,frame= cap.read()
+        writer.write(frame)
+        cv2.imshow('frame', frame)
+        if Authorised == True:
+            time.sleep(10)
+            break
+    cap.release()
+    writer.release()
+    cv2.destroyAllWindows()
     print('Motion Detected!')
     print("Hold a tag near the reader")
     id, text = reader.read()
@@ -51,10 +68,10 @@ def pir(pin):
     if to_check[0] == text:
         print('Authorised')
         Authorised = True
-        Date_time = datetime.now()
+        now = datetime.now()
+        Date_time = now.strftime("%d_%m_%Y %H¦%M¦%S")
         conn.execute("INSERT INTO ENTRY_LOG(Authorised, USER_ID, DateTime) VALUES (?,?,?)", [Authorised, id, Date_time]).lastrowid
         conn.commit()
-
         unlock()    
     else:
         print("not authorised")
