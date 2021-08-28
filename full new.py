@@ -2,6 +2,7 @@ import RPi.GPIO as GPIO
 from mfrc522 import SimpleMFRC522
 import sys
 import cv2
+import time
 from datetime import datetime
 import sqlite3
 
@@ -40,25 +41,29 @@ def unlock():
     lock()
     
 def pir(pin):
+    #recording
+    Stop_recording = False
     cap= cv2.VideoCapture(0)
     now = datetime.now()
     dt_string = now.strftime("%d_%m_%Y %H¦%¦%S")
-    dt_string += '.mp4'
+    dt_string_1 = dt_string + '.mp4'
     width= int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     height= int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-    writer= cv2.VideoWriter(dt_string, cv2.VideoWriter_fourcc(*'DIVX'), 20, (width,height))
+    writer= cv2.VideoWriter(dt_string_1, cv2.VideoWriter_fourcc(*'DIVX'), 20, (width,height))
     while True:
         ret,frame= cap.read()
         writer.write(frame)
         cv2.imshow('frame', frame)
-        if Authorised == True:
+        if Stop_recording == True:
             time.sleep(10)
             break
     cap.release()
     writer.release()
     cv2.destroyAllWindows()
+    #recording
     print('Motion Detected!')
     print("Hold a tag near the reader")
+    #add timeout funtinon incase there is no card to be scanned
     id, text = reader.read()
     print("ID: %s\nText: %s" % (id,text))
     print()
@@ -67,14 +72,18 @@ def pir(pin):
     to_check = cursor[0]
     if to_check[0] == text:
         print('Authorised')
+        Stop_recording = True
         Authorised = True
-        now = datetime.now()
-        Date_time = now.strftime("%d_%m_%Y %H¦%M¦%S")
-        conn.execute("INSERT INTO ENTRY_LOG(Authorised, USER_ID, DateTime) VALUES (?,?,?)", [Authorised, id, Date_time]).lastrowid
+        conn.execute("INSERT INTO ENTRY_LOG(Authorised, USER_ID, DateTime) VALUES (?,?,?)", [Authorised, id, dt_string]).lastrowid
         conn.commit()
         unlock()    
     else:
         print("not authorised")
+        time.sleep(10)
+        Stop_recording = True
+        Authorised = False
+        conn.execute("INSERT INTO ENTRY_LOG(Authorised, DateTime) VALUES (?,?,?)", [Authorised, dt_string]).lastrowid
+        conn.commit()
 
 GPIO.add_event_detect(14, GPIO.FALLING, callback=pir, bouncetime=100)
 print('[Press Ctrl + C to end program!]')
