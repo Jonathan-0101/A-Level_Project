@@ -6,6 +6,8 @@ import time
 from datetime import datetime
 import sqlite3
 import inputimeout
+from multiprocessing import Manager, Process
+
 
 conn = sqlite3.connect('System.db', check_same_thread=False)
 conn.execute('''CREATE TABLE if not exists ENTRY_LOG
@@ -67,10 +69,6 @@ def pir(pin):
     #recording
     print('Motion Detected!')
     print("Hold a tag near the reader")
-    #add timeout funtinon incase there is no card to be scanned
-
-    ... SOME LINES OF CODE ...
-    # Motion is detected, now we want to time the function NCFReader
     info = Manager.dict()
     info['id'] = None
     info['text'] = None
@@ -86,7 +84,9 @@ def pir(pin):
         conn.execute("INSERT INTO ENTRY_LOG(Authorised, DateTime) VALUES (?,?,?)", [Authorised, dt_string]).lastrowid
         conn.commit()
     else:
-        # PROCESS DID FINISH, DO SOMETHING ELSE    
+        # PROCESS DID FINISH, DO SOMETHING ELSE   
+        id = info['id']
+        text = info['text'] 
         print("ID: %s\nText: %s" % (id,text))
         print()
         cursor=conn.execute("SELECT text FROM ID_CARDS Where ID = ?", [id]).fetchall()
