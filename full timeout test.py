@@ -40,7 +40,10 @@ def unlock():
     print('Door unclocked')
     time.sleep(5)
     lock()
-    
+
+def NCFReader(info):
+    info['id'], info['text'] = reader.read()
+
 def pir(pin):
     #recording
     Stop_recording = False
@@ -65,26 +68,44 @@ def pir(pin):
     print('Motion Detected!')
     print("Hold a tag near the reader")
     #add timeout funtinon incase there is no card to be scanned
-    id, text = reader.read()
-    print("ID: %s\nText: %s" % (id,text))
-    print()
-    cursor=conn.execute("SELECT text FROM ID_CARDS Where ID = ?", [id]).fetchall()
-    print(cursor)
-    to_check = cursor[0]
-    if to_check[0] == text:
-        print('Authorised')
-        Stop_recording = True
-        Authorised = True
-        conn.execute("INSERT INTO ENTRY_LOG(Authorised, USER_ID, DateTime) VALUES (?,?,?)", [Authorised, id, dt_string]).lastrowid
-        conn.commit()
-        unlock()    
-    else:
-        print("not authorised")
+
+    ... SOME LINES OF CODE ...
+    # Motion is detected, now we want to time the function NCFReader
+    info = Manager.dict()
+    info['id'] = None
+    info['text'] = None
+    nfc_proc = Process(target=NCFReader, args=(info,))
+    nfc_proc.start()
+    nfc_proc.join(timeout=15)
+    if nfc_proc.is_alive():
+        nfc_proc.terminate()
+        # PROCESS DID NOT FINISH, DO SOMETHING
         time.sleep(10)
         Stop_recording = True
         Authorised = False
         conn.execute("INSERT INTO ENTRY_LOG(Authorised, DateTime) VALUES (?,?,?)", [Authorised, dt_string]).lastrowid
         conn.commit()
+    else:
+        # PROCESS DID FINISH, DO SOMETHING ELSE    
+        print("ID: %s\nText: %s" % (id,text))
+        print()
+        cursor=conn.execute("SELECT text FROM ID_CARDS Where ID = ?", [id]).fetchall()
+        print(cursor)
+        to_check = cursor[0]
+        if to_check[0] == text:
+            print('Authorised')
+            Stop_recording = True
+            Authorised = True
+            conn.execute("INSERT INTO ENTRY_LOG(Authorised, USER_ID, DateTime) VALUES (?,?,?)", [Authorised, id, dt_string]).lastrowid
+            conn.commit()
+            unlock()    
+        else:
+            print("not authorised")
+            time.sleep(10)
+            Stop_recording = True
+            Authorised = False
+            conn.execute("INSERT INTO ENTRY_LOG(Authorised, DateTime) VALUES (?,?,?)", [Authorised, dt_string]).lastrowid
+            conn.commit()
 
 GPIO.add_event_detect(14, GPIO.FALLING, callback=pir, bouncetime=100)
 print('[Press Ctrl + C to end program!]')
