@@ -20,7 +20,7 @@ PIR_PIN = 14
 reader = SimpleMFRC522()
 GPIO.setup(PIR_PIN, GPIO.IN) # Setup GPIO pin PIR as input
 print('Sensor initializing . . .')
-time.sleep(15) # Give sensor time to start-up, 16 seconds
+time.sleep(15) # Give sensor time to start-up, 15 seconds
 print('Active')
 Relay_PIN = 4
 GPIO.setup(Relay_PIN, GPIO.OUT)
@@ -65,17 +65,17 @@ def pir(pin):
     print('Motion Detected!')
     print("Hold a tag near the reader")
     #add timeout funtinon incase there is no card to be scanned
-    id, text = reader.read()
-    print("ID: %s\nText: %s" % (id,text))
+    card_id, card_text = reader.read()
+    print("ID: %s\nText: %s" % (card_id,card_text))
     print()
-    cursor=conn.execute("SELECT text FROM ID_CARDS Where ID = ?", [id]).fetchall()
+    cursor=conn.execute("SELECT text FROM ID_CARDS Where ID = ?", [card_id]).fetchall()
     print(cursor)
     to_check = cursor[0]
-    if to_check[0] == text:
+    if to_check[0] == card_text:
         print('Authorised')
         Stop_recording = True
         Authorised = True
-        conn.execute("INSERT INTO ENTRY_LOG(Authorised, USER_ID, DateTime) VALUES (?,?,?)", [Authorised, id, dt_string]).lastrowid
+        conn.execute("INSERT INTO ENTRY_LOG(Authorised, USER_ID, DateTime) VALUES (?,?,?)", [Authorised, card_id, dt_string]).lastrowid
         conn.commit()
         unlock()    
     else:
