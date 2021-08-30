@@ -47,10 +47,10 @@ def pir(pin):
     cap= cv2.VideoCapture(0)
     now = datetime.now()
     dt_string = now.strftime("%d_%m_%Y %H¦%¦%S")
-    dt_string_1 = dt_string + '.mp4'
+    recording_title = dt_string + '.mp4'
     width= int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     height= int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-    writer= cv2.VideoWriter(dt_string_1, cv2.VideoWriter_fourcc(*'DIVX'), 20, (width,height))
+    writer= cv2.VideoWriter(recording_title, cv2.VideoWriter_fourcc(*'DIVX'), 20, (width,height))
     while True:
         ret,frame= cap.read()
         writer.write(frame)
