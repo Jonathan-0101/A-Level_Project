@@ -22,8 +22,9 @@ while True:
         print()
     elif x == 'r':
         print("Hold a tag near the reader")
-        id, text = reader.read()
-        print("ID: %s\nText: %s" % (id,text))
+        reading = reader.read()
+        print(reading)
+        #print("ID: %s\nText: %s" % (id,text))
         print()
         datetime.datetime.now()
         f = open("Entry_Log.txt", "a+")
