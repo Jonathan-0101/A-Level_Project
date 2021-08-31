@@ -1,11 +1,10 @@
 import RPi.GPIO as GPIO
 from mfrc522 import SimpleMFRC522
-import sys
 import cv2
 import time
 from datetime import datetime
 import sqlite3
-import inputimeout
+import subprocess
 
 conn = sqlite3.connect('System.db', check_same_thread=False)
 conn.execute('''CREATE TABLE if not exists ENTRY_LOG
@@ -42,7 +41,7 @@ def unlock():
     lock()
     
 def pir(pin):
-    #recording
+    #recording start
     Stop_recording = False
     cap= cv2.VideoCapture(0)
     now = datetime.now()
@@ -61,12 +60,18 @@ def pir(pin):
     cap.release()
     writer.release()
     cv2.destroyAllWindows()
-    #recording
+    #recording end
     print('Motion Detected!')
     print("Hold a tag near the reader")
     #add timeout funtinon incase there is no card to be scanned
-    card_id, card_text = reader.read()
-    print("ID: %s\nText: %s" % (card_id,card_text))
+    start = time.time()
+    TIME_TO_WAIT = 60
+    process = subprocess.Popen(["python", "reader.py"])
+    time.sleep(20)
+    while True:
+        if (time.time() - start) < TIME_TO_WAIT:
+            process.terminate()
+            break
     print()
     cursor=conn.execute("SELECT text FROM ID_CARDS Where ID = ?", [card_id]).fetchall()
     print(cursor)
