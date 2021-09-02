@@ -63,15 +63,9 @@ def pir(pin):
     #recording end
     print('Motion Detected!')
     print("Hold a tag near the reader")
-    #add timeout funtinon incase there is no card to be scanned
-    start = time.time()
-    TIME_TO_WAIT = 60
-    process = subprocess.Popen(["python", "reader.py"])
-    time.sleep(20)
-    while True:
-        if (time.time() - start) < TIME_TO_WAIT:
-            process.terminate()
-            break
+    #TODO: Add timeout funtinon incase there is no card to be scanned
+    card_id, to_check = reader.read()
+    #! add timeout funtinon incase there is no card to be scanned
     print()
     cursor=conn.execute("SELECT text FROM ID_CARDS Where ID = ?", [card_id]).fetchall()
     print(cursor)
