@@ -4,7 +4,6 @@ import cv2
 import time
 from datetime import datetime
 import sqlite3
-import subprocess
 
 conn = sqlite3.connect('System.db', check_same_thread=False)
 conn.execute('''CREATE TABLE if not exists ENTRY_LOG
@@ -63,9 +62,8 @@ def pir(pin):
     #recording end
     print('Motion Detected!')
     print("Hold a tag near the reader")
-    #TODO: Add timeout funtinon incase there is no card to be scanned
-    card_id, to_check = reader.read()
-    #! add timeout funtinon incase there is no card to be scanned
+    #Reading card and waiting with timeout
+    card_id, to_check = reader.read(timeout = 20)
     print()
     cursor=conn.execute("SELECT text FROM ID_CARDS Where ID = ?", [card_id]).fetchall()
     print(cursor)
