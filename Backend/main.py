@@ -5,14 +5,17 @@ import time
 from datetime import datetime
 import sqlite3
 
-camera = PiCamera()
-conn = sqlite3.connect('System.db', check_same_thread=False)
-conn.execute('''CREATE TABLE if not exists ENTRY_LOG
-  (ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-  Authorised BOOLEAN NOT NULL,
-  USER_ID TEXT NOT NULL,
-  DateTime VARCHAR NOT NULL);''')
-conn.commit()
+camera = PiCamera() #Sets up the camera for use later on
+conn = sqlite3.connect('System.db', check_same_thread=False) #Connects to the DataBase
+conn.execute('''CREATE TABLE if not exists ID_CARDS 
+  (ID INTEGER PRIMARY KEY NOT NULL AUTO_INCREMENT,
+  Hashed_ID INTEGER NOT NULL,
+  text VARCHAR NOT NULL,
+  First_name TEXT NOT NULL,
+  Last_name TEXT NOT NULL,
+  Time_created DATETIME NOT NULL);''') #Creates the DataBase if it does not exist
+conn.commit() #Commits to the database
+#Seting up the Pins and devices connected to the Rasberry Pi
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
 PIR_PIN = 14
@@ -52,12 +55,13 @@ def pir(pin):
     print('Motion Detected!')
     print("Hold a tag near the reader")
     #Reading card and waiting with timeout
-    card_id, to_check = reader.read(timeout = 20)
+    card_id, username = reader.read(timeout = 20)
+    card_id = card_id % 1999
     print()
-    cursor=conn.execute("SELECT text FROM ID_CARDS Where ID = ?", [card_id]).fetchall()
+    cursor=conn.execute("SELECT text FROM ID_CARDS Where Hashed_ID = ? and Username = ?", [card_id, username]).fetchall()
     print(cursor)
     to_check = cursor[0]
-    if to_check[0] == cursor:
+    if len(to_check) == 1:
         print('Authorised')
         Authorised = True
         conn.execute("INSERT INTO ENTRY_LOG(Authorised, USER_ID, DateTime) VALUES (?,?,?)", [Authorised, card_id, dt_string]).lastrowid

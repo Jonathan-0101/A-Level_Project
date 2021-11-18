@@ -15,8 +15,9 @@ def dict_factory(Cursor, row):
 
 conn = sqlite3.connect('System.db')
 conn.execute('''CREATE TABLE if not exists ID_CARDS 
-  (ID INTEGER PRIMARY KEY NOT NULL,
-  text VARCHAR NOT NULL,
+  (ID INTEGER PRIMARY KEY NOT NULL AUTO_INCREMENT,
+  Hashed_ID INTEGER NOT NULL,
+  Username VARCHAR NOT NULL,
   First_name TEXT NOT NULL,
   Last_name TEXT NOT NULL,
   Time_created DATETIME NOT NULL);''')
@@ -46,9 +47,10 @@ while True:
         print("Now place your tag to write")
         reader.write(text)
         print("Written")
-        id, text = reader.read()
+        Card_id, text = reader.read()
+        Card_id = Card_id % 1999
         print()
-        conn.execute("INSERT INTO ID_CARDS(ID, text, First_name, Last_name, Time_created) VALUES (?,?,?,?,?)", [id, text, First_name, Last_name, Time_created]).lastrowid
+        conn.execute("INSERT INTO ID_CARDS(Hashed_ID, text, First_name, Last_name, Time_created) VALUES (?,?,?,?,?)", [Card_id, text, First_name, Last_name, Time_created]).lastrowid
         conn.commit()
     elif x == 'r':
         print("Hold a tag near the reader")
