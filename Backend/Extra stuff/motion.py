@@ -11,7 +11,7 @@ print('Active')
 
 def pir(pin):
     print('Motion Detected!')
-    
+
 GPIO.add_event_detect(14, GPIO.FALLING, callback=pir, bouncetime=100)
 print('[Press Ctrl + C to end program!]')
 try:
