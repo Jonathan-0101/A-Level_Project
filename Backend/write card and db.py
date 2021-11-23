@@ -33,17 +33,16 @@ while True:
     x = input("Do you want to read or write, R for read, W for write: ")
     if x == 'w':
         text = input('New data:')
-        First_name = input('First name: ')
-        Last_name = input('Last name: ')
-        Time_created = datetime.now()
+        firstName = input('First name: ')
+        lastName = input('Last name: ')
+        timeCreated = datetime.now()
         print("Now place your tag to write")
         reader.write(text)
         print("Written")
-        Card_id, text = reader.read()
-        Card_id = Card_id % 1999
+        cardId, text = reader.read()
+        cardId = cardId % 1999
         print()
-        conn.execute("INSERT INTO ID_CARDS(Hashed_ID, text, First_name, Last_name, Time_created) VALUES (?,?,?,?,?)", [
-                     Card_id, text, First_name, Last_name, Time_created]).lastrowid
+        conn.execute("INSERT INTO ID_CARDS(Hashed_ID, text, First_name, Last_name, Time_created) VALUES (?,?,?,?,?)", [cardId, text, firstName, lastName, timeCreated]).lastrowid
         conn.commit()
     elif x == 'r':
         print("Hold a tag near the reader")

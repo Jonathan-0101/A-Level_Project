@@ -57,39 +57,36 @@ def unlock():  # Function for unlocking the door and stopping the recording
 
 def pir(pin):  # Function for running the events when motion is detected
     now = datetime.now()
-    dt_string = now.strftime("%d_%m_%Y %H:%:%S")
-    recording_path = ("/home/pi/Documents/Project/Recordings/")
-    recording_title = (recording_path + dt_string + ".h264")
+    dateTime = now.strftime("%d_%m_%Y %H:%:%S")
+    recordingPath = ("/home/pi/Documents/Project/Recordings/")
+    recordingTitle = (recordingPath + dateTime + ".h264")
     camera.start_preview()
-    camera.start_recording(recording_title)
+    camera.start_recording(recordingTitle)
     print('Motion Detected!')
     # Reading card and waiting with timeout
-    card_id, username = reader.read(timeout=20)
-    card_id = card_id % 1999
+    cardId, username = reader.read(timeout=20)
+    cardId = cardId % 1999
     print()
-    cursor = conn.execute("SELECT text FROM ID_CARDS Where Hashed_ID = ? and Username = ?", [
-                          card_id, username]).fetchall()
+    cursor = conn.execute("SELECT text FROM ID_CARDS Where Hashed_ID = ? and Username = ?", [cardId, username]).fetchall()
     print(cursor)
-    to_check = cursor[0]
-    if len(to_check) == 1:
+    cardCheck = cursor[0]
+    if len(cardCheck) == 1:
         print('Authorised')
-        Authorised = True
-        conn.execute("INSERT INTO ENTRY_LOG(Authorised, USER_ID, DateTime) VALUES (?,?,?)", [
-                     Authorised, card_id, dt_string]).lastrowid
+        authorised = True
+        conn.execute("INSERT INTO ENTRY_LOG(Authorised, USER_ID, DateTime) VALUES (?,?,?)", [authorised, cardId, dateTime]).lastrowid
         conn.commit()
         unlock()
     else:
         print("not authorised")
         time.sleep(15)
-        Authorised = False
+        authorised = False
         camera.stop_recording()
         camera.stop_preview()
-        conn.execute("INSERT INTO ENTRY_LOG(Authorised, DateTime) VALUES (?,?,?)", [
-                     Authorised, dt_string]).lastrowid
+        conn.execute("INSERT INTO ENTRY_LOG(Authorised, DateTime) VALUES (?,?,?)", [authorised, dateTime]).lastrowid
         conn.commit()
 
-
 GPIO.add_event_detect(14, GPIO.FALLING, callback=pir, bouncetime=100)
+
 try:
     while True:
         time.sleep(0.001)
