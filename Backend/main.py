@@ -35,14 +35,12 @@ Relay_PIN = 4
 GPIO.setup(Relay_PIN, GPIO.OUT)
 GPIO.output(Relay_PIN, GPIO.LOW)
 
-
 def lock():  # Function for locking the door
     Relay_PIN = 4
     GPIO.setup(Relay_PIN, GPIO.OUT)
     GPIO.output(Relay_PIN, GPIO.LOW)
     print('Door locked')
     time.sleep(5)
-
 
 def unlock():  # Function for unlocking the door and stopping the recording
     Relay_PIN = 4
@@ -53,7 +51,6 @@ def unlock():  # Function for unlocking the door and stopping the recording
     camera.stop_recording()
     camera.stop_preview()
     lock()
-
 
 def pir(pin):  # Function for running the events when motion is detected
     now = datetime.now()
