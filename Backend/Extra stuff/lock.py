@@ -1,6 +1,7 @@
 import RPi.GPIO as GPIO
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
+
 def lock():
     Relay_PIN = 4
     GPIO.setup(Relay_PIN, GPIO.OUT)
