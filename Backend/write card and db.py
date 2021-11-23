@@ -1,9 +1,5 @@
-#!/usr/bin/env python
-
 import RPi.GPIO as GPIO
-import time
 from mfrc522 import SimpleMFRC522
-import sys
 import sqlite3
 from datetime import datetime
 
@@ -26,7 +22,6 @@ conn.execute('''CREATE TABLE if not exists ID_CARDS
 conn.commit()
 
 GPIO.setwarnings(False)
-
 reader = SimpleMFRC522()
 
 while True:
