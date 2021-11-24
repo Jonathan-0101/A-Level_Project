@@ -84,6 +84,8 @@ def pir(pin):  # Function for running the events when motion is detected
         conn.execute("INSERT INTO ENTRY_LOG(Authorised, DateTime) VALUES (?,?,?)", [authorised, dateTime]).lastrowid 
         conn.commit()
 
+lock() #Calling the lock function on statrup to insure that teh door is locked
+
 GPIO.add_event_detect(14, GPIO.FALLING, callback=pir, bouncetime=100) #Checks for motion
 
 try:
