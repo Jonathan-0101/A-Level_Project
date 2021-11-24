@@ -70,8 +70,8 @@ def pir(pin):  # Function for running the events when motion is detected
     if len(cardCheck) == 1:
         print('Authorised')
         authorised = 1
-        # Adds the event into the entry log
-        conn.execute("INSERT INTO ENTRY_LOG(Authorised, USER_ID, DateTime) VALUES (?,?,?)", [authorised, cardId, dateTime]).lastrowid 
+        #Adds the event into the entry log
+        conn.execute("INSERT INTO ENTRY_LOG(Authorised, USER_ID, DateTime) VALUES (?,?,?)", [authorised, cardId, dateTime]).lastrowid
         conn.commit()
         unlock() # Calls the function to unlock the door
     else:
@@ -80,8 +80,8 @@ def pir(pin):  # Function for running the events when motion is detected
         authorised = 0
         camera.stop_recording()
         camera.stop_preview()
-        # Adds the event to the events log
-        conn.execute("INSERT INTO ENTRY_LOG(Authorised, DateTime) VALUES (?,?,?)", [authorised, dateTime]).lastrowid 
+        #Adds the event to the events log
+        conn.execute("INSERT INTO ENTRY_LOG(Authorised, DateTime) VALUES (?,?,?)", [authorised, dateTime]).lastrowid
         conn.commit()
 
 lock() # Calling the lock function on statrup to insure that teh door is locked
