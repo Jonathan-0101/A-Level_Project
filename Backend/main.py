@@ -1,4 +1,4 @@
-#
+#Importing requiered modules
 import RPi.GPIO as GPIO
 from mfrc522 import SimpleMFRC522
 from picamera import PiCamera
@@ -22,18 +22,18 @@ conn.execute('''CREATE TABLE if not exists Entry_Log
 conn.commit()  # Commits to the database
 
 # Seting up the Pins and devices connected to the Rasberry Pi
-GPIO.setmode(GPIO.BCM)
-GPIO.setwarnings(False)
+Relay_PIN = 4
 PIR_PIN = 14
 camera = PiCamera()
 reader = SimpleMFRC522()
+GPIO.setup(Relay_PIN, GPIO.OUT)
+GPIO.output(Relay_PIN, GPIO.LOW)
+GPIO.setmode(GPIO.BCM)
+GPIO.setwarnings(False)
 GPIO.setup(PIR_PIN, GPIO.IN)
 print('Sensor initializing . . .')
 time.sleep(15)
 print('Active')
-Relay_PIN = 4
-GPIO.setup(Relay_PIN, GPIO.OUT)
-GPIO.output(Relay_PIN, GPIO.LOW)
 
 def lock():  # Function for locking the door
     Relay_PIN = 4
