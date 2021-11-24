@@ -71,7 +71,7 @@ def pir(pin):  # Function for running the events when motion is detected
         print('Authorised')
         authorised = 1
         #Adds the event into the entry log
-        conn.execute("INSERT INTO ENTRY_LOG(Authorised, USER_ID, DateTime) VALUES (?,?,?)", [authorised, cardId, dateTime]).lastrowid 
+        conn.execute("INSERT INTO ENTRY_LOG(Authorised, USER_ID, DateTime) VALUES (?,?,?)", [authorised, cardId, dateTime]).lastrowid
         conn.commit()
         unlock() #Calls the function to unlock the door
     else:
@@ -81,7 +81,7 @@ def pir(pin):  # Function for running the events when motion is detected
         camera.stop_recording()
         camera.stop_preview()
         #Adds the event to the events log
-        conn.execute("INSERT INTO ENTRY_LOG(Authorised, DateTime) VALUES (?,?,?)", [authorised, dateTime]).lastrowid 
+        conn.execute("INSERT INTO ENTRY_LOG(Authorised, DateTime) VALUES (?,?,?)", [authorised, dateTime]).lastrowid
         conn.commit()
 
 GPIO.add_event_detect(14, GPIO.FALLING, callback=pir, bouncetime=100) #Checks for motion
