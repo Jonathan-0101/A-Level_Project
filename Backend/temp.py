@@ -1,7 +1,6 @@
 import sqlite3
 from datetime import datetime
 
-# Connects to the DataBase
 conn = sqlite3.connect('System.db', check_same_thread=False)
 conn.execute('''CREATE TABLE if not exists Entry_Log 
   (ID INTEGER PRIMARY KEY AUTOINCREMENT,

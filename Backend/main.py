@@ -1,3 +1,4 @@
+#
 import RPi.GPIO as GPIO
 from mfrc522 import SimpleMFRC522
 from picamera import PiCamera
@@ -5,8 +6,7 @@ import time
 from datetime import datetime
 import sqlite3
 
-# Connects to the DataBase
-conn = sqlite3.connect('System.db', check_same_thread=False)
+conn = sqlite3.connect('System.db', check_same_thread=False) # Connects to the DataBase
 conn.execute('''CREATE TABLE if not exists ID_CARDS 
   (ID INTEGER PRIMARY KEY AUTO_INCREMENT,
   Hashed_ID INTEGER,
@@ -18,7 +18,7 @@ conn.execute('''CREATE TABLE if not exists Entry_Log
   (ID INTEGER PRIMARY KEY AUTOINCREMENT,
   Authorised INTEGER,
   User_ID INTEGER,
-  DateTime DATETIME)''')  # Creates the Database if it does not exist
+  DateTime DATETIME)''')  # Creates the Databases if it does not exist
 conn.commit()  # Commits to the database
 
 # Seting up the Pins and devices connected to the Rasberry Pi
@@ -60,32 +60,34 @@ def pir(pin):  # Function for running the events when motion is detected
     camera.start_preview()
     camera.start_recording(recordingTitle)
     print('Motion Detected!')
-    # Reading card and waiting with timeout
-    cardId, username = reader.read(timeout=20)
-    cardId = cardId % 1999
+    cardId, username = reader.read(timeout = 20) # Reading card and waiting with timeout
+    cardId = cardId % 1999 #Hashes the cardID
     print()
-    cursor = conn.execute("SELECT text FROM ID_CARDS Where Hashed_ID = ? and Username = ?", [cardId, username]).fetchall()
+    #Checks if the card is authorised
+    cursor = conn.execute("SELECT text FROM ID_CARDS Where Hashed_ID = ? and Username = ?", [cardId, username]).fetchall() 
     print(cursor)
     cardCheck = cursor[0]
     if len(cardCheck) == 1:
         print('Authorised')
-        authorised = True
-        conn.execute("INSERT INTO ENTRY_LOG(Authorised, USER_ID, DateTime) VALUES (?,?,?)", [authorised, cardId, dateTime]).lastrowid
+        authorised = 1
+        #Adds the event into the entry log
+        conn.execute("INSERT INTO ENTRY_LOG(Authorised, USER_ID, DateTime) VALUES (?,?,?)", [authorised, cardId, dateTime]).lastrowid 
         conn.commit()
-        unlock()
+        unlock() #Calls the function to unlock the door
     else:
         print("not authorised")
         time.sleep(15)
-        authorised = False
+        authorised = 0
         camera.stop_recording()
         camera.stop_preview()
-        conn.execute("INSERT INTO ENTRY_LOG(Authorised, DateTime) VALUES (?,?,?)", [authorised, dateTime]).lastrowid
+        #Adds the event to the events log
+        conn.execute("INSERT INTO ENTRY_LOG(Authorised, DateTime) VALUES (?,?,?)", [authorised, dateTime]).lastrowid 
         conn.commit()
 
-GPIO.add_event_detect(14, GPIO.FALLING, callback=pir, bouncetime=100)
+GPIO.add_event_detect(14, GPIO.FALLING, callback=pir, bouncetime=100) #Checks for motion
 
 try:
-    while True:
+    while True: #Loops the check for motion
         time.sleep(0.001)
 except KeyboardInterrupt:
     print("\nScript ended")
