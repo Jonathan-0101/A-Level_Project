@@ -36,7 +36,7 @@ def writeCard(): # Function for writing the card and db
     cardId, text = reader.read() # Reading the card
     cardId = cardId % 1999 # Hashing the cardId
     print()
-    conn.execute("INSERT INTO ID_CARDS(Hashed_ID, text, First_name, Last_name, Time_created) VALUES (?,?,?,?,?)", [cardId, text, firstName, lastName, timeCreated]).lastrowid # Writes the information to the db
+    conn.execute("INSERT INTO ID_CARDS(Hashed_ID, text, First_name, Last_name, Time_created) VALUES (?,?,?,?,?)", [cardId, text, firstName, lastName, timeCreated]) # Writes the information to the db
     conn.commit()
 
 def readCard(): # Function for reading the card
