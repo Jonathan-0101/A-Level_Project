@@ -6,7 +6,7 @@ import time
 from datetime import datetime
 import sqlite3
 
-conn = sqlite3.connect('System.db', check_same_thread=False) # Connects to the DataBase
+conn = sqlite3.connect('System.db', check_same_thread=False) #Connects to the DataBase
 conn.execute('''CREATE TABLE if not exists ID_CARDS 
   (ID INTEGER PRIMARY KEY AUTO_INCREMENT,
   Hashed_ID INTEGER,
@@ -18,10 +18,10 @@ conn.execute('''CREATE TABLE if not exists Entry_Log
   (ID INTEGER PRIMARY KEY AUTOINCREMENT,
   Authorised INTEGER,
   User_ID INTEGER,
-  DateTime DATETIME)''')  # Creates the Databases if it does not exist
-conn.commit()  # Commits to the database
+  DateTime DATETIME)''')  #Creates the Databases if it does not exist
+conn.commit()  #Commits to the database
 
-# Seting up the Pins and devices connected to the Rasberry Pi
+#Seting up the Pins and devices connected to the Rasberry Pi
 Relay_PIN = 4
 PIR_PIN = 14
 camera = PiCamera()
@@ -35,14 +35,14 @@ print('Sensor initializing . . .')
 time.sleep(15)
 print('Active')
 
-def lock():  # Function for locking the door
+def lock():  #Function for locking the door
     Relay_PIN = 4
     GPIO.setup(Relay_PIN, GPIO.OUT)
     GPIO.output(Relay_PIN, GPIO.LOW)
     print('Door locked')
     time.sleep(5)
 
-def unlock():  # Function for unlocking the door and stopping the recording
+def unlock():  #Function for unlocking the door and stopping the recording
     Relay_PIN = 4
     GPIO.setup(Relay_PIN, GPIO.OUT)
     GPIO.output(Relay_PIN, GPIO.HIGH)
@@ -52,7 +52,7 @@ def unlock():  # Function for unlocking the door and stopping the recording
     camera.stop_preview()
     lock()
 
-def pir(pin):  # Function for running the events when motion is detected
+def pir(pin):  #Function for running the events when motion is detected
     now = datetime.now()
     dateTime = now.strftime("%d_%m_%Y %H:%:%S")
     recordingPath = ("/home/pi/Documents/Project/Recordings/")
@@ -60,7 +60,7 @@ def pir(pin):  # Function for running the events when motion is detected
     camera.start_preview()
     camera.start_recording(recordingTitle)
     print('Motion Detected!')
-    cardId, username = reader.read(timeout = 20) # Reading card and waiting with timeout
+    cardId, username = reader.read(timeout = 20) #Reading card and waiting with timeout
     cardId = cardId % 1999 #Hashes the cardID
     print()
     #Checks if the card is authorised
