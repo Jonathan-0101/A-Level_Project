@@ -60,10 +60,10 @@ def pir(pin):  #Function for running the events when motion is detected
     camera.start_preview()
     camera.start_recording(recordingTitle)
     print('Motion Detected!')
-    cardId, username = reader.read(timeout = 20) # Reading card and waiting with timeout
-    cardId = cardId % 1999 # Hashes the cardID
+    cardId, username = reader.read(timeout = 20) #Reading card and waiting with timeout
+    cardId = cardId % 1999 #Hashes the cardID
     print()
-    # Checks if the card is authorised
+    #Checks if the card is authorised
     cursor = conn.execute("SELECT text FROM ID_CARDS Where Hashed_ID = ? and Username = ?", [cardId, username]).fetchall() 
     print(cursor)
     cardCheck = cursor[0]
@@ -73,7 +73,7 @@ def pir(pin):  #Function for running the events when motion is detected
         #Adds the event into the entry log
         conn.execute("INSERT INTO ENTRY_LOG(Authorised, USER_ID, DateTime) VALUES (?,?,?)", [authorised, cardId, dateTime])
         conn.commit()
-        unlock() # Calls the function to unlock the door
+        unlock() #Calls the function to unlock the door
     else:
         print("not authorised")
         time.sleep(15)
@@ -84,12 +84,12 @@ def pir(pin):  #Function for running the events when motion is detected
         conn.execute("INSERT INTO ENTRY_LOG(Authorised, DateTime) VALUES (?,?,?)", [authorised, dateTime])
         conn.commit()
 
-lock() # Calling the lock function on statrup to insure that teh door is locked
+lock() #Calling the lock function on statrup to insure that teh door is locked
 
-GPIO.add_event_detect(14, GPIO.FALLING, callback=pir, bouncetime=100) # Checks for motion
+GPIO.add_event_detect(14, GPIO.FALLING, callback=pir, bouncetime=100) #Checks for motion
 
 try:
-    while True: # Loops the check for motion
+    while True: #Loops the check for motion
         time.sleep(0.001)
 except KeyboardInterrupt:
     print("\nScript ended")

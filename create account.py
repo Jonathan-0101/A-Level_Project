@@ -4,29 +4,32 @@ import time
 import re
 from os import system, name
 
-conn = sqlite3.connect('System.db', check_same_thread=False) #Connects to the DataBase
-conn.execute('''CREATE TABLE if not exists Users 
+#Connects to the DataBase
+conn = sqlite3.connect('System.db', check_same_thread=False)
+conn.execute('''CREATE TABLE if not exists appUsers 
   (userName VARCHAR PRIMARY KEY,
   hashedPassword INTEGER,
   firstName TEXT,
   lastName TEXT,
   email VARCHAR,
+  adminPrivileges INTEGER,
   timeCreated DATETIME);''')
 conn.commit()
 
-emailCheck = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b' #Regex for email validation
+#Regex for email validation
+emailCheck = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
 
-def clear(): #Function to clear screen
+def clear():  #Function to clear screen
     if name == 'nt':
         _ = system('cls')
-        
-def createAccount(): #Function to create account
+
+def createAccount():  #Function to create account
     #Getting the information needed
+    userName = input("Username: ")
+    clear()
     firstName = input("First name: ")
     clear()
     lastName = input("Last name: ")
-    clear()
-    userName = input("Username: ")
     clear()
     email = input("Email: ")
     clear()
@@ -36,61 +39,83 @@ def createAccount(): #Function to create account
     clear()
     confirmPassword = input("Confirm password: ")
     clear()
-    
-    if password != confirmPassword: #Checks that the passwords match
-        print("Passwords do not match please try again")
+    admin = input("Admin privaleges (y/n): ")
+    clear()
+
+    #Searches the database for all instances of the given username
+    cursor = conn.execute(
+        "SELECT * FROM Users Where userName = ?", [userName]).fetchall()
+
+    if len(cursor) == 1:  #Checks that the username is not taken
+        print("Username is already taken, please try a different one")
         time.sleep(2)
         clear()
-        createAccount()
-    
-    if email != confirmEmail: #Checks that the emails match
+        
+    if email != confirmEmail:  #Checks that the emails match
         print("Emails do not match please try again")
         time.sleep(2)
         clear()
         createAccount()
-        
-    if not (re.fullmatch(emailCheck, email)): #Checks against the regex that the email is valid
+
+    if not (re.fullmatch(emailCheck, email)):  #Checks against the regex that the email is valid
         print("Email not valid, please try again")
         time.sleep(2)
         clear()
         createAccount()
-        
-    if len(password) < 6: #Checks the length of the password
+    
+    #Checking the password
+    if password != confirmPassword:  #Checks that the passwords match
+        print("Passwords do not match please try again")
+        time.sleep(2)
+        clear()
+        createAccount()
+
+    if len(password) < 6:  #Checks the length of the password
         print("Password is not strong enough")
         print("Please use a minimum of 6 characters")
         time.sleep(2)
         clear()
         createAccount()
-        
-    cursor=conn.execute("SELECT * FROM Users Where userName = ?", [userName]).fetchall() #Searches the database for all instances of the given username
     
-    if len(cursor) == 1: #Checks that the username is not taken
-        print("Username is already taken, please try a different one")
+    #Checking if the created user should have admin privileges
+    if admin == 'y' or 'Y':
+        adminPrivileges = 1
+        
+    elif admin == 'n' or 'N':
+        adminPrivileges = 0
+        
+    elif admin != 'y' or 'Y' or 'n' or 'N':
+        print("Admin privileges not in correct form please try again")
         time.sleep(2)
         clear()
         createAccount()
-        
-    toHash = 0
+
+    #Making the first letter of the first and last name caplital
+    firstName = firstName.capitalize()
+    lastName = lastName.capitalize()
     
-    for i in range (len(password)):
-        character= password[i]
-        asciiCharacterValue = ord(x)
+    toHash = 0
+
+    for i in range(len(password)):
+        character = password[i]
+        asciiCharacterValue = ord(character)
         if toHash == 0:
             toHash = asciiCharacterValue
         else:
             toHash = toHash * asciiCharacterValue
-            hashedPassword = toHash %1999    
-    
+            hashedPassword = toHash % 1999
+
     timeCreated = datetime.now()
-    conn.execute("INSERT INTO Users(userName, hashedPassword, firstName, lastName, email, timeCreated) VALUES (?,?,?,?,?,?)", [userName, hashedPassword, firstName, lastName, email, timeCreated]) #Writes the information to the db
+    conn.execute("INSERT INTO appUsers(userName, hashedPassword, firstName, lastName, email, adminPrivileges, timeCreated) VALUES (?,?,?,?,?,?,?)", [
+                 userName, hashedPassword, firstName, lastName, email, adminPrivileges, timeCreated])  #Writes the information to the db
     conn.commit()
 
 def menu():
     print('Welcome')
     options = ["Create account", "Exit"]
-    counter = 1                       
+    counter = 1
     for i in options:
-        print(counter,".",i)
+        print(counter, ".", i)
         counter += 1
     response = (input("\n Please select option \n"))
     if response == '1':
@@ -103,4 +128,5 @@ def menu():
         print("Error please select a valid option")
         time.sleep(2)
         menu()
+
 menu()
