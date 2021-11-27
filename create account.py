@@ -6,7 +6,7 @@ from os import system, name
 
 #Connects to the DataBase
 conn = sqlite3.connect('System.db', check_same_thread=False)
-conn.execute('''CREATE TABLE if not exists appUsers 
+conn.execute('''CREATE TABLE if not exists appUsers
   (userName VARCHAR PRIMARY KEY,
   hashedPassword INTEGER,
   firstName TEXT,
@@ -50,7 +50,7 @@ def createAccount():  #Function to create account
         print("Username is already taken, please try a different one")
         time.sleep(2)
         clear()
-        
+ 
     if email != confirmEmail:  #Checks that the emails match
         print("Emails do not match please try again")
         time.sleep(2)
@@ -62,7 +62,7 @@ def createAccount():  #Function to create account
         time.sleep(2)
         clear()
         createAccount()
-    
+
     #Checking the password
     if password != confirmPassword:  #Checks that the passwords match
         print("Passwords do not match please try again")
@@ -76,14 +76,14 @@ def createAccount():  #Function to create account
         time.sleep(2)
         clear()
         createAccount()
-    
+
     #Checking if the created user should have admin privileges
     if admin == 'y' or 'Y':
         adminPrivileges = 1
-        
+
     elif admin == 'n' or 'N':
         adminPrivileges = 0
-        
+
     elif admin != 'y' or 'Y' or 'n' or 'N':
         print("Admin privileges not in correct form please try again")
         time.sleep(2)
@@ -93,7 +93,7 @@ def createAccount():  #Function to create account
     #Making the first letter of the first and last name caplital
     firstName = firstName.capitalize()
     lastName = lastName.capitalize()
-    
+
     toHash = 0
 
     for i in range(len(password)):

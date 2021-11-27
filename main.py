@@ -64,7 +64,7 @@ def pir(pin):  #Function for running the events when motion is detected
     cardId = cardId % 1999 #Hashes the cardID
     print()
     #Checks if the card is authorised
-    cursor = conn.execute("SELECT text FROM ID_CARDS Where Hashed_ID = ? and Username = ?", [cardId, username]).fetchall() 
+    cursor = conn.execute("SELECT text FROM ID_CARDS Where Hashed_ID = ? and Username = ?", [cardId, username]).fetchall()
     print(cursor)
     cardCheck = cursor[0]
     if len(cardCheck) == 1:
