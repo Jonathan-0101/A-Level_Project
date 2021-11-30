@@ -1,7 +1,8 @@
-import sqlite3
-import datetime
-import time
 import re
+import time
+import base64
+import sqlite3
+from datetime import datetime
 from os import system, name
 
 #Connects to the DataBase
@@ -42,9 +43,12 @@ def createAccount():  #Function to create account
     admin = input("Admin privaleges (y/n): ")
     clear()
 
+    now = datetime.now() #Gets the current date and time
+    timeCreated = now.strftime("%d/%m/%Y %H:%M:%S")
+    
     #Searches the database for all instances of the given username
     cursor = conn.execute(
-        "SELECT * FROM Users Where userName = ?", [userName]).fetchall()
+        "SELECT * FROM appUsers Where userName = ?", [userName]).fetchall()
 
     if len(cursor) == 1:  #Checks that the username is not taken
         print("Username is already taken, please try a different one")
@@ -93,21 +97,16 @@ def createAccount():  #Function to create account
     #Making the first letter of the first and last name caplital
     firstName = firstName.capitalize()
     lastName = lastName.capitalize()
+    
+    #Making the characters of the email lowercase
+    email = email.lower()
 
-    toHash = 0
-
-    for i in range(len(password)):
-        character = password[i]
-        asciiCharacterValue = ord(character)
-        if toHash == 0:
-            toHash = asciiCharacterValue
-        else:
-            toHash = toHash * asciiCharacterValue
-            hashedPassword = toHash % 1999
-
-    timeCreated = datetime.now()
+    #Encrypting the password
+    password = password.encode("utf-8") 
+    password = base64.b64encode(password)
+    
     conn.execute("INSERT INTO appUsers(userName, hashedPassword, firstName, lastName, email, adminPrivileges, timeCreated) VALUES (?,?,?,?,?,?,?)", [
-                 userName, hashedPassword, firstName, lastName, email, adminPrivileges, timeCreated])  #Writes the information to the db
+                 userName, password, firstName, lastName, email, adminPrivileges, timeCreated])  #Writes the information to the db
     conn.commit()
 
 def menu():
