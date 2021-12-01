@@ -45,7 +45,7 @@ def createAccount():  #Function to create account
 
     now = datetime.now() #Gets the current date and time
     timeCreated = now.strftime("%d/%m/%Y %H:%M:%S")
-    
+
     #Searches the database for all instances of the given username
     cursor = conn.execute(
         "SELECT * FROM appUsers Where userName = ?", [userName]).fetchall()

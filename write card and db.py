@@ -11,7 +11,6 @@ def dict_factory(Cursor, row):
         d[col[0]] = row[idx]
     return
 
-
 conn = sqlite3.connect("System.db")  #Connects to the Database
 conn.execute("""CREATE TABLE if not exists ID_CARDS 
   (ID INTEGER PRIMARY KEY AUTO_INCREMENT,
@@ -24,7 +23,6 @@ conn.commit()   #Commits it to the database
 #Sets up the GPIO pins and defines the reader
 GPIO.setwarnings(False)
 reader = SimpleMFRC522()
-
 
 def writeCard():    #Function for writing the card and db
     #Inputs to get information about the card owner
@@ -44,13 +42,11 @@ def writeCard():    #Function for writing the card and db
     )   #Writes the information to the db
     conn.commit()
 
-
 def readCard(): #Function for reading the card
     print("Hold a tag near the reader")
     ID, text = reader.read()
     print("ID: %s\nText: %s" % (ID, text))
     print()
-
 
 def menu(): #Menu for the user to choose what they want to do
     choice = input("Do you want to read or write, R for read, W for write: ")
