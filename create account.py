@@ -102,7 +102,7 @@ def createAccount():  #Function to create account
     email = email.lower()
 
     #Encrypting the password
-    password = password.encode("utf-8") 
+    password = password.encode("utf-8")
     password = base64.b64encode(password)
     
     conn.execute("INSERT INTO appUsers(userName, hashedPassword, firstName, lastName, email, adminPrivileges, timeCreated) VALUES (?,?,?,?,?,?,?)", [
