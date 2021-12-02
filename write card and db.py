@@ -4,7 +4,6 @@ from mfrc522 import SimpleMFRC522
 import sqlite3
 from datetime import datetime
 
-
 def dict_factory(Cursor, row):
     d = {}
     for idx, col in enumerate(cursor.description):
@@ -20,6 +19,7 @@ conn.execute("""CREATE TABLE if not exists ID_CARDS
   Last_name TEXT,
   Time_created DATETIME);""")   #Creates the dable if it does not exist
 conn.commit()   #Commits it to the database
+
 #Sets up the GPIO pins and defines the reader
 GPIO.setwarnings(False)
 reader = SimpleMFRC522()
@@ -50,9 +50,11 @@ def readCard(): #Function for reading the card
 
 def menu(): #Menu for the user to choose what they want to do
     choice = input("Do you want to read or write, R for read, W for write: ")
+    
     if choice == "w" or "W":
         writeCard()
         menu()
+        
     elif choice == "r" or "R":
         readCard()
         menu()

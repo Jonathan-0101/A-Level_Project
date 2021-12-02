@@ -6,7 +6,7 @@ import time
 from datetime import datetime
 import sqlite3
 
-conn = sqlite3.connect('System.db', check_same_thread=False) #Connects to the DataBase
+conn = sqlite3.connect('System.db', check_same_thread=False) #Connects to the Database
 conn.execute('''CREATE TABLE if not exists ID_CARDS 
   (ID INTEGER PRIMARY KEY AUTO_INCREMENT,
   Hashed_ID INTEGER,
@@ -18,7 +18,7 @@ conn.execute('''CREATE TABLE if not exists Entry_Log
   (ID INTEGER PRIMARY KEY AUTOINCREMENT,
   Authorised INTEGER,
   User_ID INTEGER,
-  DateTime DATETIME)''')  #Creates the Databases if it does not exist
+  DateTime DATETIME)''')  #Creates the tables if it does not exist
 conn.commit()  #Commits to the database
 
 #Seting up the Pins and devices connected to the Rasberry Pi
@@ -67,6 +67,7 @@ def pir(pin):  #Function for running the events when motion is detected
     cursor = conn.execute("SELECT text FROM ID_CARDS Where Hashed_ID = ? and Username = ?", [cardId, username]).fetchall()
     print(cursor)
     cardCheck = cursor[0]
+    
     if len(cardCheck) == 1:
         print('Authorised')
         authorised = 1
@@ -74,6 +75,7 @@ def pir(pin):  #Function for running the events when motion is detected
         conn.execute("INSERT INTO ENTRY_LOG(Authorised, USER_ID, DateTime) VALUES (?,?,?)", [authorised, cardId, dateTime])
         conn.commit()
         unlock() #Calls the function to unlock the door
+        
     else:
         print("not authorised")
         time.sleep(15)
@@ -91,7 +93,9 @@ GPIO.add_event_detect(14, GPIO.FALLING, callback=pir, bouncetime=100) #Checks fo
 try:
     while True: #Loops the check for motion
         time.sleep(0.001)
+        
 except KeyboardInterrupt:
     print("\nScript ended")
+    
 finally:
     GPIO.cleanup()

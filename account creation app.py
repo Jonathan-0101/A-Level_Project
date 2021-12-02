@@ -8,6 +8,28 @@ from functools import partial
 
 conn = sqlite3.connect('System.db', check_same_thread=False)
 
+largeFont= ("Verdana", 12)
+normFont = ("Helvetica", 10)
+smallFont = ("Helvetica", 8)
+
+def exitAccountCreationWindow(accountCreationWindow):
+    accountCreationWindow.destroy()
+
+def closePopUp(accountCreationWindow, popUp):
+    popUp.destroy()
+    accountCreationWindow.destroy()
+    createAccount()
+
+def accountcreationError(message, accountCreationWindow):
+    popUp = Tk()
+    popUp.geometry('250x100')
+    popUp.title('Alert!')
+    label = Label(popUp, text=message, font=normFont)
+    label.pack(side="top", fill="x", pady=10)
+    button = Button(popUp, text="Okay", command = lambda: [closePopUp(accountCreationWindow, popUp)])
+    button.pack()
+    popUp.mainloop()
+
 def accountValidation(userName, firstName, lastName, email, password, confirmPassword, adminPrivileges, accountCreationWindow):
     #Retreaving the information from the users inputs for validation
     userName = userName.get()
@@ -28,42 +50,42 @@ def accountValidation(userName, firstName, lastName, email, password, confirmPas
     cursor = conn.execute(
         "SELECT * FROM appUsers Where userName = ?", [userName]).fetchall()
 
+    if len(userName) == 0 or len(firstName) == 0 or len(lastName) == 0 or len(email) == 0 or len(password) == 0 or len(confirmPassword) == 0 or len(admin) == 0:
+        message = 'Some fields are blank \n Please fill all of them in'
+        accountcreationError(message, accountCreationWindow)
+        
+    
     if len(cursor) == 1:  #Checks that the username is not taken
-        print("Username is already taken, please try a different one")
-        time.sleep(2)
-
+        message = 'Username is already taken, please try a different one'
+        accountcreationError(message, accountCreationWindow)
+        
     if not (re.fullmatch(emailCheck, email)):  #Checks against the regex that the email is valid
-        print("Email not valid, please try again")
-        time.sleep(2)
-        accountCreationWindow.destroy()
-        createAccount()
+        message = 'Email not valid, please try again'
+        accountcreationError(message, accountCreationWindow)
 
     #Checking the password
     if password != confirmPassword:  #Checks that the passwords match
-        print("Passwords do not match please try again")
-        time.sleep(2)
-        accountCreationWindow.destroy()
-        createAccount()
+        message = 'Passwords do not match please try again'
+        accountcreationError(message, accountCreationWindow)
 
     if len(password) < 6:  #Checks the length of the password
-        print("Password is not strong enough")
-        print("Please use a minimum of 6 characters")
-        time.sleep(2)
-        accountCreationWindow.destroy()
-        createAccount()
+        message = 'Password is not strong enough \n Please use a minimum of 6 characters'
+        accountcreationError(message, accountCreationWindow)
 
     #Checking if the created user should have admin privileges
-    if admin == 'y' or 'Y' or 'yes' or 'YES' or 'Yes':
+    
+    adminYes = ['y', 'Y', 'yes', 'YES', 'Yes']
+    adminNo = ['n', 'N', 'no', 'NO', 'No']
+    
+    if admin in adminYes:
         adminPrivileges = 1
 
-    elif admin == 'n' or 'N' or 'no' or 'NO' or 'No':
+    elif admin in adminNo:
         adminPrivileges = 0
 
-    elif admin != 'y' or 'Y' or 'yes' or 'YES' or 'Yes' or 'n' or 'N' or 'no' or 'NO' or 'No':
-        print("Admin privileges not in correct form please try again")
-        time.sleep(2)
-        accountCreationWindow.destroy()
-        createAccount()
+    else:
+        message = 'Admin privileges not in correct form \n Please try again'
+        accountcreationError(message, accountCreationWindow)
         
     #Making the first letter of the first and last name caplital
     firstName = firstName.capitalize()
@@ -78,11 +100,12 @@ def accountValidation(userName, firstName, lastName, email, password, confirmPas
     
     conn.execute("INSERT INTO appUsers(userName, hashedPassword, firstName, lastName, email, adminPrivileges, timeCreated) VALUES (?,?,?,?,?,?,?)", [
                  userName, password, firstName, lastName, email, adminPrivileges, timeCreated])  #Writes the information to the db
-    conn.commit()    
+    conn.commit()
+    accountCreationWindow.destroy()    
 
 def createAccount():
     accountCreationWindow = Tk()
-    accountCreationWindow.geometry('380x370')
+    accountCreationWindow.geometry('390x410')
     accountCreationWindow.title('Create account')
 
     spacer1 = Label(accountCreationWindow, text ="").grid(row=0, column=0)
@@ -118,6 +141,8 @@ def createAccount():
     spacer2 = Label(accountCreationWindow, text ="").grid(row=8, column=1)
     validateLogin = partial(accountValidation, userName, firstName, lastName, email, password, confirmPassword, adminPrivileges, accountCreationWindow)
     loginButton = Button(accountCreationWindow, text="           Create account           ", command=validateLogin).grid(row=9, column=2)
+    spacer3 = Label(accountCreationWindow, text =" ").grid(row=10, column=2)
+    exitButton = Button(accountCreationWindow, text ="             Exit            ", command = lambda: [exitAccountCreationWindow(accountCreationWindow)]).grid(row=11, column=2)
     accountCreationWindow.mainloop()
     
 createAccount()
