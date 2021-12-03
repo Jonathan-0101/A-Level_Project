@@ -16,7 +16,7 @@ conn.execute('''CREATE TABLE if not exists appUsers
   timeCreated DATETIME);''')
 conn.commit()
 
-largeFont= ("Verdana", 12)
+largeFont = ("Verdana", 12)
 normFont = ("Helvetica", 10)
 smallFont = ("Helvetica", 8)
 
@@ -49,7 +49,7 @@ def login(username, password, loginWindow):
 
   passwordToEncode = passwordToEncode.encode("utf-8")
   password = base64.b64encode(passwordToEncode)
-  cursor = conn.execute("SELECT * FROM appUsers Where userName = ?",[userName,]).fetchall()
+  cursor = conn.execute("SELECT * FROM appUsers Where userName = ?", [userName, ]).fetchall()
 
   if len(cursor) == 0:
     message = 'Username does not exist'

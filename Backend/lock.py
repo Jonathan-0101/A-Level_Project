@@ -17,7 +17,7 @@ def unlock():
     menu()
 
 def menu():
-    x=input("Lock or unlock? ")
+    x = input("Lock or unlock? ")
     if x == 'l':
         lock()
     if x == 'u':
