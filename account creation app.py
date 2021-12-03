@@ -59,7 +59,7 @@ def accountValidation(userName, firstName, lastName, email, password, confirmPas
         message = 'Username is already taken, please try a different one'
         accountcreationError(message, accountCreationWindow)
         
-    if not (re.fullmatch(emailCheck, email)):  #Checks against the regex that the email is valid
+    if not re.fullmatch(emailCheck, email):  #Checks against the regex that the email is valid
         message = 'Email not valid, please try again'
         accountcreationError(message, accountCreationWindow)
 
