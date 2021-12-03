@@ -48,7 +48,7 @@ def createAccount():  #Function to create account
         time.sleep(2)
         createAccount()
 
-    if not (re.fullmatch(emailCheck, email)):  #Checks against the regex that the email is valid
+    if not re.fullmatch(emailCheck, email):  #Checks against the regex that the email is valid
         print("Email not valid, please try again")
         time.sleep(2)
         createAccount()
