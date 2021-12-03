@@ -4,12 +4,6 @@ from mfrc522 import SimpleMFRC522
 import sqlite3
 from datetime import datetime
 
-def dict_factory(Cursor, row):
-    d = {}
-    for idx, col in enumerate(cursor.description):
-        d[col[0]] = row[idx]
-    return
-
 conn = sqlite3.connect("System.db")  #Connects to the Database
 conn.execute("""CREATE TABLE if not exists ID_CARDS 
   (ID INTEGER PRIMARY KEY AUTO_INCREMENT,
