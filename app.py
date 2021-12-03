@@ -43,7 +43,7 @@ def login(username, password, loginWindow):
   userName = username.get()
   passwordToEncode = password.get() 
 
-  if len(userName) == 0 or len(passwordToEncode) == 0:
+  if 0 in (len(userName), len(passwordToEncode)):
     message = 'Please fill in the inputs'
     loginError(message, loginWindow)
 

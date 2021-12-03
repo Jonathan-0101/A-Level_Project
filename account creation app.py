@@ -50,7 +50,7 @@ def accountValidation(userName, firstName, lastName, email, password, confirmPas
     cursor = conn.execute(
         "SELECT * FROM appUsers Where userName = ?", [userName]).fetchall()
 
-    if len(userName) == 0 or len(firstName) == 0 or len(lastName) == 0 or len(email) == 0 or len(password) == 0 or len(confirmPassword) == 0 or len(admin) == 0:
+    if 0 in (len(userName), len(firstName), len(lastName), len(email), len(password), len(confirmPassword), len(admin)):
         message = 'Some fields are blank \n Please fill all of them in'
         accountcreationError(message, accountCreationWindow)
         
