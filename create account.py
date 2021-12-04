@@ -1,4 +1,5 @@
 import re
+import sys
 import time
 import base64
 import sqlite3
@@ -104,7 +105,7 @@ def menu():
         createAccount()
         menu()
     if response == '2':
-        exit()
+        sys.exit()
     else:
         print("Error please select a valid option")
         time.sleep(2)
