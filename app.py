@@ -20,6 +20,7 @@ largeFont = ("Verdana", 12)
 normFont = ("Helvetica", 10)
 smallFont = ("Helvetica", 8)
 
+
 def loginMenu():
   loginWindow = Tk()
   loginWindow.geometry('330x195')
@@ -39,9 +40,10 @@ def loginMenu():
   spacer3 = Label(loginWindow, text ="").grid(row=3, column=0)
   loginWindow.mainloop()
 
+
 def login(username, password, loginWindow):
   userName = username.get()
-  passwordToEncode = password.get() 
+  passwordToEncode = password.get()
 
   if 0 in (len(userName), len(passwordToEncode)):
     message = 'Please fill in the inputs'
@@ -81,10 +83,12 @@ def login(username, password, loginWindow):
     loginError(message, loginWindow)
     print("Unauthorised")
 
+
 def closePopUp(loginWindow, popUp):
   popUp.destroy()
   loginWindow.destroy()
   loginMenu()
+
 
 def loginError(message, loginWindow):
   popUp = Tk()
@@ -95,6 +99,7 @@ def loginError(message, loginWindow):
   button = Button(popUp, text="Okay", command = lambda: [closePopUp(loginWindow, popUp)])
   button.pack()
   popUp.mainloop()
+
 
 def main(userName, firstName, lastName, email, adminPrivalges, loginTime):
   print("Username: ", userName)

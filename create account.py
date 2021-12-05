@@ -21,6 +21,7 @@ conn.commit()
 # Regex for email validation
 emailCheck = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
 
+
 def createAccount():  # Function to create account
     # Getting the information needed
     userName = input("Username: ")
@@ -92,6 +93,7 @@ def createAccount():  # Function to create account
     conn.execute("INSERT INTO appUsers(userName, hashedPassword, firstName, lastName, email, adminPrivileges, timeCreated) VALUES (?,?,?,?,?,?,?)", [
                     userName, password, firstName, lastName, email, adminPrivileges, timeCreated])  # Writes the information to the db
     conn.commit()
+
 
 def menu():
     print('Welcome')

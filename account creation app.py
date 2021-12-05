@@ -12,13 +12,16 @@ largeFont= ("Verdana", 12)
 normFont = ("Helvetica", 10)
 smallFont = ("Helvetica", 8)
 
+
 def exitAccountCreationWindow(accountCreationWindow):
     accountCreationWindow.destroy()
+
 
 def closePopUp(accountCreationWindow, popUp):
     popUp.destroy()
     accountCreationWindow.destroy()
     createAccount()
+
 
 def accountcreationError(message, accountCreationWindow):
     popUp = Tk()
@@ -29,6 +32,7 @@ def accountcreationError(message, accountCreationWindow):
     button = Button(popUp, text="Okay", command = lambda: [closePopUp(accountCreationWindow, popUp)])
     button.pack()
     popUp.mainloop()
+
 
 def accountValidation(userName, firstName, lastName, email, password, confirmPassword, adminPrivileges, accountCreationWindow):
     # Retreaving the information from the users inputs for validation
@@ -103,6 +107,7 @@ def accountValidation(userName, firstName, lastName, email, password, confirmPas
     conn.commit()
     accountCreationWindow.destroy()    
 
+
 def createAccount():
     accountCreationWindow = Tk()
     accountCreationWindow.geometry('390x410')
@@ -144,5 +149,6 @@ def createAccount():
     spacer3 = Label(accountCreationWindow, text =" ").grid(row=10, column=2)
     exitButton = Button(accountCreationWindow, text ="             Exit            ", command = lambda: [exitAccountCreationWindow(accountCreationWindow)]).grid(row=11, column=2)
     accountCreationWindow.mainloop()
-    
+
+
 createAccount()

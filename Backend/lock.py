@@ -2,6 +2,7 @@ import RPi.GPIO as GPIO
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
 
+
 def lock():
     Relay_PIN = 4
     GPIO.setup(Relay_PIN, GPIO.OUT)
@@ -9,12 +10,14 @@ def lock():
     print('Door locked')
     menu()
 
+
 def unlock():
     Relay_PIN = 4
     GPIO.setup(Relay_PIN, GPIO.OUT)
     GPIO.output(Relay_PIN, GPIO.HIGH)
     print('Door unclocked')
     menu()
+
 
 def menu():
     x = input("Lock or unlock? ")

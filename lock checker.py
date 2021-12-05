@@ -13,6 +13,7 @@ conn.commit()
 cursor = conn.execute("INSERT into doorStatus(lockStatus) VALUES (?)", [0])
 conn.commit()
 
+
 def main():
     while True:
         cursor = conn.execute("SELECT * FROM doorStatus").fetchall()
@@ -22,12 +23,14 @@ def main():
             time.sleep(0.25)
         else:
             time.sleep(0.25)
-        
+
+   
 def unlock():
     GPIO.setup(Relay_PIN, GPIO.OUT)
     GPIO.output(Relay_PIN, GPIO.HIGH)
     print('Door unlocked')
     time.sleep(30)
+
 
 def lock():
     GPIO.setup(Relay_PIN, GPIO.OUT)

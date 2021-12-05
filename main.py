@@ -35,12 +35,14 @@ print('Sensor initializing . . .')
 time.sleep(15)
 print('Active')
 
+
 def lock():  # Function for locking the door
     Relay_PIN = 4
     GPIO.setup(Relay_PIN, GPIO.OUT)
     GPIO.output(Relay_PIN, GPIO.LOW)
     print('Door locked')
     time.sleep(5)
+
 
 def unlock():  # Function for unlocking the door and stopping the recording
     Relay_PIN = 4
@@ -51,6 +53,7 @@ def unlock():  # Function for unlocking the door and stopping the recording
     camera.stop_recording()
     camera.stop_preview()
     lock()
+
 
 def pir(pin):  # Function for running the events when motion is detected
     now = datetime.now()
@@ -90,12 +93,15 @@ lock() # Calling the lock function on statrup to insure that teh door is locked
 
 GPIO.add_event_detect(14, GPIO.FALLING, callback=pir, bouncetime=100) # Checks for motion
 
+
 try:
     while True: # Loops the check for motion
         time.sleep(0.001)
-        
+
+      
 except KeyboardInterrupt:
     print("\nScript ended")
-    
+
+  
 finally:
     GPIO.cleanup()
