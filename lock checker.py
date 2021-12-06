@@ -6,11 +6,10 @@ Relay_PIN = 4
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
 
-conn = sqlite3.connect('System.db', check_same_thread=False)
-conn.execute('''CREATE TABLE if not exists doorStatus (lockStatus INTEGER PRIMARY KEY);''')
-conn.commit()
-
-cursor = conn.execute("INSERT into doorStatus(lockStatus) VALUES (?)", [0])
+conn = sqlite3.connect("System.db", check_same_thread=False)
+conn.execute(
+    """CREATE TABLE if not exists doorStatus (lockStatus INTEGER PRIMARY KEY);"""
+)
 conn.commit()
 
 
@@ -24,17 +23,18 @@ def main():
         else:
             time.sleep(0.25)
 
-   
+
 def unlock():
     GPIO.setup(Relay_PIN, GPIO.OUT)
     GPIO.output(Relay_PIN, GPIO.HIGH)
-    print('Door unlocked')
+    print("Door unlocked")
     time.sleep(30)
 
 
 def lock():
     GPIO.setup(Relay_PIN, GPIO.OUT)
     GPIO.output(Relay_PIN, GPIO.LOW)
-    print('Door locked')
+    print("Door locked")
+
 
 main()

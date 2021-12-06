@@ -18,8 +18,8 @@ conn.execute('''CREATE TABLE if not exists Entry_Log
   (ID INTEGER PRIMARY KEY AUTOINCREMENT,
   Authorised INTEGER,
   User_ID INTEGER,
-  DateTime DATETIME)''')  # Creates the tables if it does not exist
-conn.commit()  # Commits to the database
+  DateTime DATETIME)''') # Creates the tables if it does not exist
+conn.commit() # Commits to the database
 
 # Seting up the Pins and devices connected to the Rasberry Pi
 Relay_PIN = 4
@@ -36,16 +36,14 @@ time.sleep(15)
 print('Active')
 
 
-def lock():  # Function for locking the door
-    Relay_PIN = 4
+def lock(): # Function for locking the door
     GPIO.setup(Relay_PIN, GPIO.OUT)
     GPIO.output(Relay_PIN, GPIO.LOW)
     print('Door locked')
     time.sleep(5)
 
 
-def unlock():  # Function for unlocking the door and stopping the recording
-    Relay_PIN = 4
+def unlock(): # Function for unlocking the door and stopping the recording
     GPIO.setup(Relay_PIN, GPIO.OUT)
     GPIO.output(Relay_PIN, GPIO.HIGH)
     print('Door unclocked')
@@ -55,7 +53,7 @@ def unlock():  # Function for unlocking the door and stopping the recording
     lock()
 
 
-def pir(pin):  # Function for running the events when motion is detected
+def pir(pin): # Function for running the events when motion is detected
     now = datetime.now()
     dateTime = now.strftime("%d_%m_%Y %H:%:%S")
     recordingPath = ("/home/pi/Documents/Project/Recordings/")
