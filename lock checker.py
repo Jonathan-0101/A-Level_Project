@@ -7,9 +7,6 @@ GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
 
 conn = sqlite3.connect("System.db", check_same_thread=False)
-conn.execute(
-    """CREATE TABLE if not exists doorStatus (lockStatus INTEGER PRIMARY KEY);"""
-)
 conn.commit()
 
 
@@ -35,6 +32,8 @@ def lock():
     GPIO.setup(Relay_PIN, GPIO.OUT)
     GPIO.output(Relay_PIN, GPIO.LOW)
     print("Door locked")
+    conn.execute("Update doorStatus set lockStatus = 0 where id = 1")
+    conn.commit()
 
 
 main()
