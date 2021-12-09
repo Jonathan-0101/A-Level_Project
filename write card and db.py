@@ -6,7 +6,7 @@ from datetime import datetime
 
 conn = sqlite3.connect("System.db")  # Connects to the Database
 conn.execute("""CREATE TABLE if not exists idCards 
-  (ID INTEGER PRIMARY KEY AUTO_INCREMENT,
+  (ID INTEGER PRIMARY KEY AUTOINCREMENT,
   Hashed_ID INTEGER,
   Username VARCHAR,
   First_name TEXT,
@@ -48,13 +48,17 @@ def readCard(): # Function for reading the card
 def menu(): # Menu for the user to choose what they want to do
     choice = input("Do you want to read or write, R for read, W for write: ")
     
-    if choice == "w" or "W":
+    if choice == "w" or choice == "W":
         writeCard()
         menu()
         
-    elif choice == "r" or "R":
+    elif choice == "r" or choice == "R":
         readCard()
         menu()
+        
+    else:
+        print("Error please try again")
+        exit()
 
 
 menu()
