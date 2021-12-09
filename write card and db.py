@@ -5,7 +5,7 @@ import sqlite3
 from datetime import datetime
 
 conn = sqlite3.connect("System.db")  # Connects to the Database
-conn.execute("""CREATE TABLE if not exists ID_CARDS 
+conn.execute("""CREATE TABLE if not exists idCards 
   (ID INTEGER PRIMARY KEY AUTO_INCREMENT,
   Hashed_ID INTEGER,
   Username VARCHAR,
@@ -32,7 +32,7 @@ def writeCard():    # Function for writing the card and db
     cardId = cardId % 1999  # Hashing the cardId
     print()
     conn.execute(
-        "INSERT INTO ID_CARDS(Hashed_ID, text, First_name, Last_name, Time_created) VALUES (?,?,?,?,?)",
+        "INSERT INTO idCards(Hashed_ID, text, First_name, Last_name, Time_created) VALUES (?,?,?,?,?)",
         [cardId, text, firstName, lastName, timeCreated],
     )   # Writes the information to the db
     conn.commit()

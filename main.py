@@ -7,14 +7,14 @@ from datetime import datetime
 import sqlite3
 
 conn = sqlite3.connect('System.db', check_same_thread=False) # Connects to the Database
-conn.execute('''CREATE TABLE if not exists ID_CARDS 
+conn.execute('''CREATE TABLE if not exists idCards 
   (ID INTEGER PRIMARY KEY AUTO_INCREMENT,
   Hashed_ID INTEGER,
   text VARCHAR,
   First_name TEXT,
   Last_name TEXT,
   Time_created DATETIME);''')
-conn.execute('''CREATE TABLE if not exists Entry_Log 
+conn.execute('''CREATE TABLE if not exists entryLog 
   (ID INTEGER PRIMARY KEY AUTOINCREMENT,
   Authorised INTEGER,
   User_ID INTEGER,
@@ -65,7 +65,7 @@ def pir(pin): # Function for running the events when motion is detected
     cardId = cardId % 1999 # Hashes the cardID
     print()
     # Checks if the card is authorised
-    cursor = conn.execute("SELECT text FROM ID_CARDS Where Hashed_ID = ? and Username = ?", [cardId, username]).fetchall()
+    cursor = conn.execute("SELECT text FROM idCards Where Hashed_ID = ? and Username = ?", [cardId, username]).fetchall()
     print(cursor)
     cardCheck = cursor[0]
     

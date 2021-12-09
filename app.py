@@ -16,6 +16,7 @@ conn.execute('''CREATE TABLE if not exists appUsers
   timeCreated DATETIME);''')
 conn.commit()
 
+
 largeFont = ("Verdana", 12)
 normFont = ("Helvetica", 10)
 smallFont = ("Helvetica", 8)
@@ -23,7 +24,7 @@ smallFont = ("Helvetica", 8)
 
 def loginMenu():
   loginWindow = Tk()
-  loginWindow.geometry('330x195')
+  loginWindow.geometry('347x195')
   loginWindow.title('Login')
   currentWindow = loginWindow
   spacer1 = Label(loginWindow, text ="").grid(row=0, column=0)
@@ -81,7 +82,6 @@ def login(username, password, loginWindow):
   else:
     message = 'Password incorrect please try again'
     loginError(message, loginWindow)
-    print("Unauthorised")
 
 
 def closePopUp(loginWindow, popUp):
@@ -108,5 +108,6 @@ def main(userName, firstName, lastName, email, adminPrivalges, loginTime):
   print("Email: ", email)
   print("Admin privaleges: ", adminPrivalges)
   print("Login time: ", loginTime)
+
 
 loginMenu()
