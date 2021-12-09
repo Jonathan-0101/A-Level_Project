@@ -22,18 +22,16 @@ conn.execute('''CREATE TABLE if not exists entryLog
 conn.commit() # Commits to the database
 
 # Seting up the Pins and devices connected to the Rasberry Pi
-Relay_PIN = 4
-PIR_PIN = 14
-camera = PiCamera()
-reader = SimpleMFRC522()
-GPIO.setup(Relay_PIN, GPIO.OUT)
-GPIO.output(Relay_PIN, GPIO.LOW)
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
-GPIO.setup(PIR_PIN, GPIO.IN)
+PIR_PIN = 14
+reader = SimpleMFRC522()
+GPIO.setup(PIR_PIN, GPIO.IN) # Setup GPIO pin PIR as input
 print('Sensor initializing . . .')
-time.sleep(15)
+time.sleep(15) # Give sensor time to start-up, 16 seconds
 print('Active')
+Relay_PIN = 4
+camera = PiCamera()
 
 
 def lock(): # Function for locking the door
@@ -59,10 +57,10 @@ def pir(pin): # Function for running the events when motion is detected
     cursor = conn.execute("SELECT * FROM entryLog").fetchall()
     
     if len(cursor) == 0:
-        videoFileName = 1
+        videoFileName = "1"
         
     else:    
-        videoFileName = len(cursor)
+        videoFileName = str(len(cursor))
         
     recordingPath = ("/home/pi/Project/Recordings/")
     recordingTitle = (recordingPath + videoFileName + ".h264")

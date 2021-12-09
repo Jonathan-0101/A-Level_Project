@@ -21,7 +21,7 @@ reader = SimpleMFRC522()
 
 def writeCard():    # Function for writing the card and db
     # Inputs to get information about the card owner
-    text = input("New data:")
+    text = input("Card name: ")
     firstName = input("First name: ")
     lastName = input("Last name: ")
     timeCreated = datetime.now()
@@ -32,7 +32,7 @@ def writeCard():    # Function for writing the card and db
     cardId = cardId % 1999  # Hashing the cardId
     print()
     conn.execute(
-        "INSERT INTO idCards(Hashed_ID, cardName, First_name, Last_name, Time_created) VALUES (?,?,?,?,?)",
+        "INSERT INTO idCards(hashedId, cardName, firstName, lastName, timeCreated) VALUES (?,?,?,?,?)",
         [cardId, text, firstName, lastName, timeCreated],
     )   # Writes the information to the db
     conn.commit()
