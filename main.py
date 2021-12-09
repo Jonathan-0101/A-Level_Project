@@ -1,24 +1,24 @@
 # Importing requiered modules
-import RPi.GPIO as GPIO
-from mfrc522 import SimpleMFRC522
-from picamera import PiCamera
 import time
-from datetime import datetime
 import sqlite3
+import RPi.GPIO as GPIO
+from picamera import PiCamera
+from datetime import datetime
+from mfrc522 import SimpleMFRC522
 
 conn = sqlite3.connect('System.db', check_same_thread=False) # Connects to the Database
 conn.execute('''CREATE TABLE if not exists idCards 
-  (ID INTEGER PRIMARY KEY AUTO_INCREMENT,
-  Hashed_ID INTEGER,
-  text VARCHAR,
-  First_name TEXT,
-  Last_name TEXT,
-  Time_created DATETIME);''')
+  (id INTEGER PRIMARY KEY AUTOINCREMENT,
+  hashedId INTEGER,
+  cardName VARCHAR,
+  firstName TEXT,
+  lastName TEXT,
+  timeCreated DATETIME);''')
 conn.execute('''CREATE TABLE if not exists entryLog 
-  (ID INTEGER PRIMARY KEY AUTOINCREMENT,
-  Authorised INTEGER,
-  User_ID INTEGER,
-  DateTime DATETIME)''') # Creates the tables if it does not exist
+  (id INTEGER PRIMARY KEY AUTOINCREMENT,
+  authorised INTEGER,
+  userId INTEGER,
+  dateTime DATETIME)''') # Creates the tables if it does not exist
 conn.commit() # Commits to the database
 
 # Seting up the Pins and devices connected to the Rasberry Pi
@@ -55,9 +55,17 @@ def unlock(): # Function for unlocking the door and stopping the recording
 
 def pir(pin): # Function for running the events when motion is detected
     now = datetime.now()
-    dateTime = now.strftime("%d_%m_%Y %H:%:%S")
-    recordingPath = ("/home/pi/Documents/Project/Recordings/")
-    recordingTitle = (recordingPath + dateTime + ".h264")
+    dateTime = now
+    cursor = conn.execute("SELECT * FROM entryLog").fetchall()
+    
+    if len(cursor) == 0:
+        videoFileName = 1
+        
+    else:    
+        videoFileName = len(cursor)
+        
+    recordingPath = ("/home/pi/Project/Recordings/")
+    recordingTitle = (recordingPath + videoFileName + ".h264")
     camera.start_preview()
     camera.start_recording(recordingTitle)
     print('Motion Detected!')
@@ -65,26 +73,26 @@ def pir(pin): # Function for running the events when motion is detected
     cardId = cardId % 1999 # Hashes the cardID
     print()
     # Checks if the card is authorised
-    cursor = conn.execute("SELECT text FROM idCards Where Hashed_ID = ? and Username = ?", [cardId, username]).fetchall()
+    cursor = conn.execute("SELECT text FROM idCards Where hashedId = ? and userName = ?", [cardId, username]).fetchall()
     print(cursor)
     cardCheck = cursor[0]
     
     if len(cardCheck) == 1:
         print('Authorised')
-        authorised = 1
+        authorised = True
         # Adds the event into the entry log
-        conn.execute("INSERT INTO ENTRY_LOG(Authorised, USER_ID, DateTime) VALUES (?,?,?)", [authorised, cardId, dateTime])
+        conn.execute("INSERT INTO entryLog(authorised, userId, dateTime) VALUES (?,?,?)", [authorised, cardId, dateTime])
         conn.commit()
         unlock() # Calls the function to unlock the door
-        
+    
     else:
         print("not authorised")
         time.sleep(15)
-        authorised = 0
+        authorised = False
         camera.stop_recording()
         camera.stop_preview()
         # Adds the event to the events log
-        conn.execute("INSERT INTO ENTRY_LOG(Authorised, DateTime) VALUES (?,?,?)", [authorised, dateTime])
+        conn.execute("INSERT INTO entryLog(authorised, dateTime) VALUES (?,?)", [authorised, dateTime])
         conn.commit()
 
 lock() # Calling the lock function on statrup to insure that teh door is locked
@@ -96,7 +104,7 @@ try:
     while True: # Loops the check for motion
         time.sleep(0.001)
 
-      
+    
 except KeyboardInterrupt:
     print("\nScript ended")
 

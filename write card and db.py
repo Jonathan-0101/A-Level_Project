@@ -5,13 +5,13 @@ import sqlite3
 from datetime import datetime
 
 conn = sqlite3.connect("System.db")  # Connects to the Database
-conn.execute("""CREATE TABLE if not exists idCards 
-  (ID INTEGER PRIMARY KEY AUTOINCREMENT,
-  Hashed_ID INTEGER,
-  Username VARCHAR,
-  First_name TEXT,
-  Last_name TEXT,
-  Time_created DATETIME);""")   # Creates the dable if it does not exist
+conn.execute('''CREATE TABLE if not exists idCards 
+  (id INTEGER PRIMARY KEY AUTOINCREMENT,
+  hashedId INTEGER,
+  cardName VARCHAR,
+  firstName TEXT,
+  lastName TEXT,
+  timeCreated DATETIME);''')   # Creates the dable if it does not exist
 conn.commit()   # Commits it to the database
 
 # Sets up the GPIO pins and defines the reader
@@ -32,7 +32,7 @@ def writeCard():    # Function for writing the card and db
     cardId = cardId % 1999  # Hashing the cardId
     print()
     conn.execute(
-        "INSERT INTO idCards(Hashed_ID, text, First_name, Last_name, Time_created) VALUES (?,?,?,?,?)",
+        "INSERT INTO idCards(Hashed_ID, cardName, First_name, Last_name, Time_created) VALUES (?,?,?,?,?)",
         [cardId, text, firstName, lastName, timeCreated],
     )   # Writes the information to the db
     conn.commit()
