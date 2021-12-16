@@ -5,7 +5,6 @@ import RPi.GPIO as GPIO
 from picamera import PiCamera
 from datetime import datetime
 from mfrc522 import SimpleMFRC522
-from picamera.array import PiRGBArray
 
 
 conn = sqlite3.connect('System.db', check_same_thread=False) # Connects to the Database
@@ -37,25 +36,28 @@ print('Active')
 
 Relay_PIN = 4
 camera = PiCamera()
-camera.resolution = (640, 480)
+camera.resolution = (1920, 1080)
 camera.framerate = 32
 
-
+def cameraStop():
+    time.sleep(10)
+    global filename
+    global camera
+    camera.stop_recording()
+    camera.close()
+    
 
 def lock(): # Function for locking the door
     GPIO.setup(Relay_PIN, GPIO.OUT)
     GPIO.output(Relay_PIN, GPIO.LOW)
     print('Door locked')
-    time.sleep(5)
+    cameraStop()
 
 
 def unlock(): # Function for unlocking the door and stopping the recording
     GPIO.setup(Relay_PIN, GPIO.OUT)
     GPIO.output(Relay_PIN, GPIO.HIGH)
     print('Door unclocked')
-    time.sleep(10)
-    camera.stop_recording()
-    camera.stop_preview()
     lock()
 
 
