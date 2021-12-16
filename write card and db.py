@@ -49,11 +49,11 @@ def readCard(): # Function for reading the card
 def menu(): # Menu for the user to choose what they want to do
     choice = input("Do you want to read or write, R for read, W for write: ")
     
-    if choice == "w" or choice == "W":
+    if choice in ("w", "W"):
         writeCard()
         menu()
         
-    elif choice == "r" or choice == "R":
+    elif choice in ("r", "R"):
         readCard()
         menu()
         
