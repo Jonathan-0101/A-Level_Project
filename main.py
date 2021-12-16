@@ -121,6 +121,6 @@ try:
 except KeyboardInterrupt:
     print("\nScript ended")
 
-  
+
 finally:
     GPIO.cleanup()
