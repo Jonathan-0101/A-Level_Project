@@ -40,7 +40,7 @@ def cameraStop():
     global camera
     camera.stop_recording()
     camera.close()
-    
+
 
 def lock(): # Function for locking the door
     GPIO.setup(Relay_PIN, GPIO.OUT)
@@ -63,11 +63,11 @@ def pir(pin): # Function for running the events when motion is detected
 
     if len(cursor) == 0:
         videoFileName = "1"
-        
+
     else:
         videoFileName = str(len(cursor))
-        
-    
+
+
     recordingPath = ("/home/pi/Project/Recordings/")
     global fileName
     fileName = (recordingPath + videoFileName + ".h264")
@@ -86,7 +86,7 @@ def pir(pin): # Function for running the events when motion is detected
     cursor = conn.execute("SELECT text FROM idCards Where hashedId = ? and cardName = ?", [cardId, cardName]).fetchall()
     print(cursor)
     cardCheck = cursor[0]
-    
+
     if len(cardCheck) == 1:
         print('Authorised')
         authorised = True
@@ -94,7 +94,7 @@ def pir(pin): # Function for running the events when motion is detected
         conn.execute("INSERT INTO entryLog(authorised, userId, dateTime) VALUES (?,?,?)", [authorised, cardId, dateTime])
         conn.commit()
         unlock() # Calls the function to unlock the door
-    
+
     else:
         print("not authorised")
         time.sleep(15)
@@ -114,7 +114,7 @@ try:
     while True: # Loops the check for motion
         time.sleep(0.001)
 
-    
+
 except KeyboardInterrupt:
     print("\nScript ended")
 
