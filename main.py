@@ -35,13 +35,11 @@ time.sleep(15) # Give sensor time to start-up, 16 seconds
 print('Active')
 
 Relay_PIN = 4
-camera = PiCamera()
-camera.resolution = (1920, 1080)
-camera.framerate = 32
+
 
 def cameraStop():
     time.sleep(10)
-    global filename
+    global fileName
     global camera
     camera.stop_recording()
     camera.close()
@@ -72,11 +70,17 @@ def pir(pin): # Function for running the events when motion is detected
     else:    
         videoFileName = str(len(cursor))
         
+    
     recordingPath = ("/home/pi/Project/Recordings/")
-    recordingTitle = (recordingPath + videoFileName + ".h264")
+    global fileName
+    fileName = (recordingPath + videoFileName + ".h264")
+    global camera
+    camera = PiCamera()
+    camera.resolution = (1920, 1080)
+    camera.framerate = 32
     camera.start_preview(alpha=200)
     time.sleep(0.1)
-    camera.start_recording(recordingTitle)
+    camera.start_recording(fileName)
     print('Motion Detected!')
     cardId, cardName = reader.read()    # Reading the card
     cardId = cardId % 1999  # Hashing the cardId

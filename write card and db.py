@@ -1,7 +1,8 @@
 # Importing the requiered moduels
+import sys
+import sqlite3
 import RPi.GPIO as GPIO
 from mfrc522 import SimpleMFRC522
-import sqlite3
 from datetime import datetime
 
 conn = sqlite3.connect("System.db")  # Connects to the Database
@@ -58,7 +59,7 @@ def menu(): # Menu for the user to choose what they want to do
         
     else:
         print("Error please try again")
-        exit()
+        sys.exit()
 
 
 menu()
