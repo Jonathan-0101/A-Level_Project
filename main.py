@@ -25,15 +25,12 @@ conn.commit() # Commits to the database
 # Seting up the Pins and devices connected to the Rasberry Pi
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
-
 PIR_PIN = 14
 reader = SimpleMFRC522()
-
 GPIO.setup(PIR_PIN, GPIO.IN) # Setup GPIO pin PIR as input
 print('Sensor initializing . . .')
 time.sleep(15) # Give sensor time to start-up, 16 seconds
 print('Active')
-
 Relay_PIN = 4
 
 
@@ -63,11 +60,11 @@ def pir(pin): # Function for running the events when motion is detected
     now = datetime.now()
     dateTime = now
     cursor = conn.execute("SELECT * FROM entryLog").fetchall()
-    
+
     if len(cursor) == 0:
         videoFileName = "1"
         
-    else:    
+    else:
         videoFileName = str(len(cursor))
         
     
