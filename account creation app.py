@@ -58,7 +58,6 @@ def accountValidation(userName, firstName, lastName, email, password, confirmPas
         message = 'Some fields are blank \n Please fill all of them in'
         accountcreationError(message, accountCreationWindow)
         
-    
     if len(cursor) == 1:  # Checks that the username is not taken
         message = 'Username is already taken, please try a different one'
         accountcreationError(message, accountCreationWindow)
@@ -66,7 +65,7 @@ def accountValidation(userName, firstName, lastName, email, password, confirmPas
     if not re.fullmatch(emailCheck, email):  # Checks against the regex that the email is valid
         message = 'Email not valid, please try again'
         accountcreationError(message, accountCreationWindow)
-
+        
     # Checking the password
     if password != confirmPassword:  # Checks that the passwords match
         message = 'Passwords do not match please try again'

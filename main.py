@@ -15,6 +15,7 @@ conn.execute('''CREATE TABLE if not exists idCards
   firstName TEXT,
   lastName TEXT,
   timeCreated DATETIME);''')
+
 conn.execute('''CREATE TABLE if not exists entryLog 
   (id INTEGER PRIMARY KEY AUTOINCREMENT,
   authorised INTEGER,
@@ -29,7 +30,7 @@ PIR_PIN = 14
 reader = SimpleMFRC522()
 GPIO.setup(PIR_PIN, GPIO.IN) # Setup GPIO pin PIR as input
 print('Sensor initializing . . .')
-time.sleep(15) # Give sensor time to start-up, 16 seconds
+time.sleep(15) # Give sensor time to start-up, 15 seconds
 print('Active')
 Relay_PIN = 4
 
@@ -61,13 +62,14 @@ def pir(pin): # Function for running the events when motion is detected
     dateTime = now
     cursor = conn.execute("SELECT * FROM entryLog").fetchall()
 
+    #Naming the video file in relation to the event id
     if len(cursor) == 0:
         videoFileName = "1"
 
     else:
         videoFileName = str(len(cursor))
 
-
+    #Creating the requierments for the camera to record an event    
     recordingPath = ("/home/pi/Project/Recordings/")
     global fileName
     fileName = (recordingPath + videoFileName + ".h264")
@@ -79,9 +81,12 @@ def pir(pin): # Function for running the events when motion is detected
     time.sleep(0.1)
     camera.start_recording(fileName)
     print('Motion Detected!')
-    cardId, cardName = reader.read()    # Reading the card
+    cardId = None
+    cardName = None
+    cardId, cardName = reader.read(timeout=20) # Reading the card waiting for 20 seconds if no card is scanned
     cardId = cardId % 1999  # Hashing the cardId
     print()
+    
     # Checks if the card is authorised
     cursor = conn.execute("SELECT text FROM idCards Where hashedId = ? and cardName = ?", [cardId, cardName]).fetchall()
     print(cursor)
