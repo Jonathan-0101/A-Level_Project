@@ -22,6 +22,30 @@ normFont = ("Helvetica", 10)
 smallFont = ("Helvetica", 8)
 
 
+import time
+import base64
+import sqlite3
+from tkinter import *
+from datetime import datetime
+from functools import partial
+
+conn = sqlite3.connect('System.db', check_same_thread=False)
+conn.execute('''CREATE TABLE if not exists appUsers
+  (userName VARCHAR PRIMARY KEY,
+  hashedPassword INTEGER,
+  firstName TEXT,
+  lastName TEXT,
+  email VARCHAR,
+  adminPrivileges INTEGER,
+  timeCreated DATETIME);''')
+conn.commit()
+
+
+largeFont = ("Verdana", 12)
+normFont = ("Helvetica", 10)
+smallFont = ("Helvetica", 8)
+
+
 def loginMenu():
     loginWindow = Tk()
     loginWindow.geometry('347x195')
@@ -113,6 +137,28 @@ def main(userName, firstName, lastName, email, adminPrivalges, loginTime, lastLo
     print("Admin privaleges: ", adminPrivalges)
     print("Login time: ", loginTime)
     print("Last log in:", lastLogIn)
+    menuWindow = Tk()
+    if adminPrivalges == True:
+        menuWindow.geometry('1080x720')
+    else:
+        menuWindow.geometry('1080x700')
+    menuWindow.mainloop()
+    # loginWindow.title('Login')
+    # currentWindow = loginWindow
+    # spacer1 = Label(loginWindow, text ="").grid(row=0, column=0)
+    # username = StringVar()
+    # usernameLabel = Label(loginWindow, text="User Name", pady=10, width=10, anchor='w').grid(row=1, column=1)
+    # usernameEntry = Entry(loginWindow, textvariable=username,  width=30).grid(row=1, column=2)
+    # password = StringVar()
+    # passwordLabel = Label(loginWindow, text="Password", pady=10, width=10, anchor='w').grid(row=2, column=1)
+    # passwordEntry = Entry(loginWindow, textvariable=password, show='*',  width=30).grid(row=2, column=2)
+    # validateLogin = partial(login, username, password, loginWindow)
+    # loginButton = Button(loginWindow, text="           Login           ", command=validateLogin).grid(row=3, column=2)
+    # spacer2 = Label(loginWindow, text =" ").grid(row=4, column=2)
+    # exitButton = Button(loginWindow, text ="             Exit            ", command = exit).grid(row=5, column=2)
+    # spacer3 = Label(loginWindow, text ="").grid(row=3, column=0)
+    # loginWindow.mainloop()
+
 
 
 loginMenu()
