@@ -92,7 +92,7 @@ def login(username, password, loginWindow):
       adminPrivalges = cursor[0][5]
       lastLogIn = cursor[0][7]
       now = datetime.now()
-      logInTimeForDB = now.strftime("%H:%M %d/%m/%Y")
+      logInTimeForDB = now.strftime("%d/%m/%Y")
       conn.execute("UPDATE appUsers SET lastLogIn = ? WHERE userName = ?", (logInTimeForDB, userName))
       conn.commit()
       loginTime = now.strftime("%H:%M")
@@ -128,6 +128,13 @@ def loginError(message, loginWindow):
     button.pack()
     popUp.mainloop()
 
+def viewLogs():
+    cursor = conn.execute("SELECT * FROM entryLog").fetchall()
+    print(cursor)
+
+def unlockDoor():
+    print("door unlocked")
+
 
 def main(userName, firstName, lastName, email, adminPrivalges, loginTime, lastLogIn):
     print("Username: ", userName)
@@ -137,27 +144,28 @@ def main(userName, firstName, lastName, email, adminPrivalges, loginTime, lastLo
     print("Admin privaleges: ", adminPrivalges)
     print("Login time: ", loginTime)
     print("Last log in:", lastLogIn)
+    userSumarry = 'Username: ' + userName + '\nFirst name: ' + firstName + '\nEmail: ' + email + '\nLog in time: ' + loginTime + '\nLast Log In: ' + lastLogIn
+    print(userSumarry)
     menuWindow = Tk()
     if adminPrivalges == True:
         menuWindow.geometry('1080x720')
     else:
         menuWindow.geometry('1080x700')
+    menuWindow.title('Main menu')
+    currentWindow = menuWindow
+    #User summary print out
+    userSumarryDisplay = Label(menuWindow, text = userSumarry,  justify=LEFT, pady=10, padx=10)
+    userSumarryDisplay.place(relx = 1.0, rely = 0.0, anchor ='ne')
+    #View logs button
+    viewLogButton = Button(menuWindow, text="           View Logs           ", command = lambda: [viewLogs()], pady=10, padx=10)
+    viewLogButton.place(relx = 0.5, rely = 0.4, anchor = 'center')
+    #Unlock door button
+    unlockDoorButton = Button(menuWindow, text="           Unlock door           ", command = lambda: [unlockDoor()], pady=10, padx=10)
+    unlockDoorButton.place(relx = 0.5, rely = 0.5, anchor = 'center')
+    #Exit button
+    exitButton = Button(menuWindow, text ="             Log off            ", command = exit, pady=10, padx=10)
+    exitButton.place(relx = 0.5, rely = 0.6, anchor = 'center')
     menuWindow.mainloop()
-    # loginWindow.title('Login')
-    # currentWindow = loginWindow
-    # spacer1 = Label(loginWindow, text ="").grid(row=0, column=0)
-    # username = StringVar()
-    # usernameLabel = Label(loginWindow, text="User Name", pady=10, width=10, anchor='w').grid(row=1, column=1)
-    # usernameEntry = Entry(loginWindow, textvariable=username,  width=30).grid(row=1, column=2)
-    # password = StringVar()
-    # passwordLabel = Label(loginWindow, text="Password", pady=10, width=10, anchor='w').grid(row=2, column=1)
-    # passwordEntry = Entry(loginWindow, textvariable=password, show='*',  width=30).grid(row=2, column=2)
-    # validateLogin = partial(login, username, password, loginWindow)
-    # loginButton = Button(loginWindow, text="           Login           ", command=validateLogin).grid(row=3, column=2)
-    # spacer2 = Label(loginWindow, text =" ").grid(row=4, column=2)
-    # exitButton = Button(loginWindow, text ="             Exit            ", command = exit).grid(row=5, column=2)
-    # spacer3 = Label(loginWindow, text ="").grid(row=3, column=0)
-    # loginWindow.mainloop()
 
 
 
