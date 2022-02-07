@@ -16,9 +16,9 @@ def main():
         if cursor[0][0] == 1:
             unlock()
             lock()
-            time.sleep(0.25)
+            time.sleep(5)
         else:
-            time.sleep(0.25)
+            time.sleep(5)
 
 
 def unlock():

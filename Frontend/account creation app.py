@@ -13,28 +13,29 @@ normFont = ("Helvetica", 10)
 smallFont = ("Helvetica", 8)
 
 
-def exitAccountCreationWindow(accountCreationWindow):
-    accountCreationWindow.destroy()
+def exitAccountCreationWindow(currentWindow):
+    currentWindow.destroy()
 
 
-def closePopUp(accountCreationWindow, popUp):
+def closePopUp(currentWindow, popUp):
     popUp.destroy()
-    accountCreationWindow.destroy()
+    currentWindow.destroy()
     createAccount()
 
 
-def accountcreationError(message, accountCreationWindow):
+def accountcreationError(message, currentWindow):
     popUp = Tk()
     popUp.geometry('250x100')
     popUp.title('Alert!')
     label = Label(popUp, text=message, font=normFont)
     label.pack(side="top", fill="x", pady=10)
-    button = Button(popUp, text="Okay", command = lambda: [closePopUp(accountCreationWindow, popUp)])
+    button = Button(popUp, text="Okay", command = lambda: [closePopUp(currentWindow, popUp)])
     button.pack()
     popUp.mainloop()
 
 
 def accountValidation(userName, firstName, lastName, email, password, confirmPassword, adminPrivileges, accountCreationWindow):
+    currentWindow = accountCreationWindow
     # Retreaving the information from the users inputs for validation
     userName = userName.get()
     firstName = firstName.get()
@@ -56,24 +57,24 @@ def accountValidation(userName, firstName, lastName, email, password, confirmPas
 
     if 0 in (len(userName), len(firstName), len(lastName), len(email), len(password), len(confirmPassword), len(admin)):
         message = 'Some fields are blank \n Please fill all of them in'
-        accountcreationError(message, accountCreationWindow)
+        accountcreationError(message, currentWindow)
         
     if len(cursor) == 1:  # Checks that the username is not taken
         message = 'Username is already taken, please try a different one'
-        accountcreationError(message, accountCreationWindow)
+        accountcreationError(message, currentWindow)
         
     if not re.fullmatch(emailCheck, email):  # Checks against the regex that the email is valid
         message = 'Email not valid, please try again'
-        accountcreationError(message, accountCreationWindow)
+        accountcreationError(message, currentWindow)
         
     # Checking the password
     if password != confirmPassword:  # Checks that the passwords match
         message = 'Passwords do not match please try again'
-        accountcreationError(message, accountCreationWindow)
+        accountcreationError(message, currentWindow)
 
     if len(password) < 6:  # Checks the length of the password
         message = 'Password is not strong enough \n Please use a minimum of 6 characters'
-        accountcreationError(message, accountCreationWindow)
+        accountcreationError(message, currentWindow)
 
     # Checking if the created user should have admin privileges
     
@@ -88,7 +89,7 @@ def accountValidation(userName, firstName, lastName, email, password, confirmPas
 
     else:
         message = 'Admin privileges not in correct form \n Please try again'
-        accountcreationError(message, accountCreationWindow)
+        accountcreationError(message, currentWindow)
         
     # Making the first letter of the first and last name caplital
     firstName = firstName.capitalize()
@@ -104,7 +105,7 @@ def accountValidation(userName, firstName, lastName, email, password, confirmPas
     conn.execute("INSERT INTO appUsers(userName, hashedPassword, firstName, lastName, email, adminPrivileges, timeCreated) VALUES (?,?,?,?,?,?,?)", [
                  userName, password, firstName, lastName, email, adminPrivileges, timeCreated])  # Writes the information to the db
     conn.commit()
-    accountCreationWindow.destroy()    
+    currentWindow.destroy()    
 
 
 def createAccount():

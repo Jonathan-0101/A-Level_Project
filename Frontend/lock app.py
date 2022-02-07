@@ -5,14 +5,13 @@ from tkinter import *
 conn = sqlite3.connect('System.db', check_same_thread=False)
 
 def unlock(lockWindow):
-    print("Hello")
+    conn.execute("Update doorStatus set lockStatus = 1 where id = 1")
+    conn.commit()
     closeUnlockWindow(lockWindow)
 
 
 def closeUnlockWindow(lockWindow):
     lockWindow.destroy()
-    conn.execute("Update doorStatus set lockStatus = 1 where id = 1")
-    conn.commit()
 
 
 def unlockWindow():
