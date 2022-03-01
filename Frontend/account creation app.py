@@ -19,8 +19,6 @@ def exitAccountCreationWindow(currentWindow):
 
 def closePopUp(currentWindow, popUp):
     popUp.destroy()
-    currentWindow.destroy()
-    createAccount()
 
 
 def accountcreationError(message, currentWindow):
