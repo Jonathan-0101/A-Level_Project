@@ -1,5 +1,4 @@
 import re
-import time
 import base64
 import sqlite3
 import tkinter as tk
