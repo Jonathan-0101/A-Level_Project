@@ -41,13 +41,13 @@ def accountValidation(userName, firstName, lastName, email, password, confirmPas
     password = password.get()
     confirmPassword = confirmPassword.get()
     admin = adminPrivileges.get()
-    
+
     # Regex for email validation
     emailCheck = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
-    
+
     now = datetime.now() # Gets the current date and time
     timeCreated = now.strftime("%d/%m/%Y %H:%M:%S")
-    
+
     # Searches the database for all instances of the given username
     cursor = conn.execute(
         "SELECT * FROM appUsers Where userName = ?", [userName]).fetchall()
@@ -55,15 +55,15 @@ def accountValidation(userName, firstName, lastName, email, password, confirmPas
     if 0 in (len(userName), len(firstName), len(lastName), len(email), len(password), len(confirmPassword), len(admin)):
         message = 'Some fields are blank \n Please fill all of them in'
         accountcreationError(message, currentWindow)
-        
+
     if len(cursor) == 1:  # Checks that the username is not taken
         message = 'Username is already taken, please try a different one'
         accountcreationError(message, currentWindow)
-        
+
     if not re.fullmatch(emailCheck, email):  # Checks against the regex that the email is valid
         message = 'Email not valid, please try again'
         accountcreationError(message, currentWindow)
-        
+
     # Checking the password
     if password != confirmPassword:  # Checks that the passwords match
         message = 'Passwords do not match please try again'
@@ -74,10 +74,10 @@ def accountValidation(userName, firstName, lastName, email, password, confirmPas
         accountcreationError(message, currentWindow)
 
     # Checking if the created user should have admin privileges
-    
+
     adminYes = ['y', 'Y', 'yes', 'YES', 'Yes']
     adminNo = ['n', 'N', 'no', 'NO', 'No']
-    
+
     if admin in adminYes:
         adminPrivileges = 1
 
@@ -87,18 +87,18 @@ def accountValidation(userName, firstName, lastName, email, password, confirmPas
     else:
         message = 'Admin privileges not in correct form \n Please try again'
         accountcreationError(message, currentWindow)
-        
+
     # Making the first letter of the first and last name caplital
     firstName = firstName.capitalize()
     lastName = lastName.capitalize()
-    
+
     # Making the characters of the email lowercase
     email = email.lower()
 
     # Encrypting the password
     password = password.encode("utf-8")
     password = base64.b64encode(password)
-    
+
     conn.execute("INSERT INTO appUsers(userName, hashedPassword, firstName, lastName, email, adminPrivileges, timeCreated) VALUES (?,?,?,?,?,?,?)", [
                  userName, password, firstName, lastName, email, adminPrivileges, timeCreated])  # Writes the information to the db
     conn.commit()
