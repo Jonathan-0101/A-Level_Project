@@ -207,7 +207,7 @@ def main(userName, firstName, lastName, email, adminPrivalges, loginTime, lastLo
     userSumarryDisplay.place(relx = 1.0, rely = 0.0, anchor ='ne')
 
     
-    if adminPrivalges == True:  
+    if adminPrivalges is True:  
         #Create account button
         createAccountButton = tk.Button(menuWindow, text="      Create Account      ", command = lambda: [createAccount(menuWindow)], pady=10, padx=10)
         #Manage users button
