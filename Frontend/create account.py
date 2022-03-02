@@ -43,7 +43,7 @@ def createAccount():  # Function to create account
         print("Username is already taken, please try a different one")
         time.sleep(2)
         createAccount()
-        
+
     if email != confirmEmail:  # Checks that the emails match
         print("Emails do not match please try again")
         time.sleep(2)

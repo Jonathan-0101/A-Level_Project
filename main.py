@@ -86,7 +86,7 @@ def pir(pin): # Function for running the events when motion is detected
     cardId, cardName = reader.read(timeout=20) # Reading the card waiting for 20 seconds if no card is scanned
     cardId = cardId % 1999  # Hashing the cardId
     print()
-    
+
     # Checks if the card is authorised
     cursor = conn.execute("SELECT text FROM idCards Where hashedId = ? and cardName = ?", [cardId, cardName]).fetchall()
     print(cursor)

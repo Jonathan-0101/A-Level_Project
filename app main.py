@@ -50,13 +50,13 @@ def accountValidation(acUserName, acFirstName, acLastName, acEmail, acPassword, 
     password = acPassword.get()
     confirmPassword = acConfirmPassword.get()
     adminPrivileges = acAdminPrivileges.get()
-    
+
     # Regex for email validation
     emailCheck = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
-    
+
     now = datetime.now() # Gets the current date and time
     timeCreated = now.strftime("%d/%m/%Y %H:%M:%S")
-    
+
     # Searches the database for all instances of the given username
     cursor = conn.execute(
         "SELECT * FROM appUsers Where userName = ?", [userName]).fetchall()
@@ -64,15 +64,15 @@ def accountValidation(acUserName, acFirstName, acLastName, acEmail, acPassword, 
     if 0 in (len(userName), len(firstName), len(lastName), len(email), len(password), len(confirmPassword), len(adminPrivileges)):
         message = 'Some fields are blank \n Please fill all of them in'
         accountcreationError(message, currentWindow, menuWindow)
-        
+
     if len(cursor) == 1:  # Checks that the username is not taken
         message = 'Username is already taken, please try a different one'
         accountcreationError(message, currentWindow, menuWindow)
-        
+
     if not re.fullmatch(emailCheck, email):  # Checks against the regex that the email is valid
         message = 'Email not valid, please try again'
         accountcreationError(message, currentWindow, menuWindow)
-        
+
     # Checking the password
     if password != confirmPassword:  # Checks that the passwords match
         message = 'Passwords do not match please try again'
@@ -83,10 +83,10 @@ def accountValidation(acUserName, acFirstName, acLastName, acEmail, acPassword, 
         accountcreationError(message, currentWindow, menuWindow)
 
     # Checking if the created user should have admin privileges
-    
+
     adminYes = ['y', 'Y', 'yes', 'YES', 'Yes']
     adminNo = ['n', 'N', 'no', 'NO', 'No']
-    
+
     if adminPrivileges in adminYes:
         adminPrivileges = 1
 
@@ -96,18 +96,18 @@ def accountValidation(acUserName, acFirstName, acLastName, acEmail, acPassword, 
     else:
         message = 'Admin privileges not in correct form \n Please try again'
         accountcreationError(message, currentWindow, menuWindow)
-        
+
     # Making the first letter of the first and last name caplital
     firstName = firstName.capitalize()
     lastName = lastName.capitalize()
-    
+
     # Making the characters of the email lowercase
     email = email.lower()
 
     # Encrypting the password
     password = password.encode("utf-8")
     password = base64.b64encode(password)
-        
+
     conn.execute("INSERT INTO appUsers(userName, hashedPassword, firstName, lastName, email, adminPrivileges, timeCreated) VALUES (?,?,?,?,?,?,?)", [
                  userName, password, firstName, lastName, email, adminPrivileges, timeCreated])  # Writes the information to the db
     conn.commit()
@@ -156,14 +156,14 @@ def createAccount(menuWindow):
     spacer3 = tk.Label(accountCreationWindow, text =" ").grid(row=10, column=2)
     exitButton = tk.Button(accountCreationWindow, text ="             Exit            ", command = lambda: [destroyWindow(currentWindow)]).grid(row=11, column=2)
     accountCreationWindow.mainloop()
-    
+
 
 
 def viewLogs(menuWindow):
     cursor = conn.execute("SELECT * FROM entryLog").fetchall()
     print(cursor)
-    
-    
+
+
 def unlock(lockWindow):
     conn.execute("Update doorStatus set lockStatus = 1 where id = 1")
     conn.commit()
@@ -206,7 +206,7 @@ def main(userName, firstName, lastName, email, adminPrivalges, loginTime, lastLo
     userSumarryDisplay = tk.Label(menuWindow, text = userSumarry,  justify="left", pady=10, padx=10)
     userSumarryDisplay.place(relx = 1.0, rely = 0.0, anchor ='ne')
 
-    
+
     if adminPrivalges is True:  
         #Create account button
         createAccountButton = tk.Button(menuWindow, text="      Create Account      ", command = lambda: [createAccount(menuWindow)], pady=10, padx=10)
@@ -219,12 +219,12 @@ def main(userName, firstName, lastName, email, adminPrivalges, loginTime, lastLo
         exitButton.place(relx = 0.5, rely = 0.7, anchor = 'center')
         unlockDoorButton.place(relx = 0.5, rely = 0.4, anchor = 'center')
 
-        
+
     else:
         viewLogButton.place(relx = 0.5, rely = 0.4, anchor = 'center')
         unlockDoorButton.place(relx = 0.5, rely = 0.5, anchor = 'center')
         exitButton.place(relx = 0.5, rely = 0.6, anchor = 'center')
-        
+
     menuWindow.mainloop()
 
 
@@ -285,8 +285,8 @@ def loginError(message, currentWindow, window):
     button = tk.Button(popUp, text="Okay", command = lambda: [destroyPopUp(popUpWindow)])
     button.pack()
     popUp.mainloop()
-    
-    
+
+
 window = tk.Tk()
 window.geometry('347x195')
 window.title('Login')
