@@ -4,7 +4,6 @@ import time
 import base64
 import sqlite3
 from datetime import datetime
-from os import system, name
 
 # Connects to the DataBase
 conn = sqlite3.connect('System.db', check_same_thread=False)
