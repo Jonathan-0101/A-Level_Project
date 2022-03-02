@@ -1,4 +1,5 @@
 import re
+import time
 import base64
 import sqlite3
 import tkinter as tk
@@ -21,27 +22,20 @@ largeFont = ("Verdana", 12)
 normFont = ("Helvetica", 10)
 smallFont = ("Helvetica", 8)
 
-def destroyWindow(currentWindow):
-    currentWindow.destroy()
 
-
-def destroyPopUp(popUpWindow):
-    popUpWindow.destroy()
-
-
-def accountcreationError(message, currentWindow, menuWindow):
+def accountcreationError(message, menuWindow):
     popUp = tk.Toplevel(menuWindow)
     popUp.geometry('250x100')
     popUpWindow = popUp
     popUp.title('Alert!')
     label = tk.Label(popUp, text=message, font=normFont)
     label.pack(side="top", fill="x", pady=10)
-    button = tk.Button(popUp, text="Okay", command = lambda: [destroyPopUp(popUpWindow)])
+    button = tk.Button(popUp, text="Okay", command = popUpWindow.destroy())
     button.pack()
     popUp.mainloop()
 
-def accountValidation(acUserName, acFirstName, acLastName, acEmail, acPassword, acConfirmPassword, acAdminPrivileges, currentWindow, accountCreationWindow, menuWindow):
-    currentWindow = accountCreationWindow
+
+def accountValidation(acUserName, acFirstName, acLastName, acEmail, acPassword, acConfirmPassword, acAdminPrivileges, accountCreationWindow, menuWindow):
     # Retreaving the information from the users inputs for validation
     userName = acUserName.get()
     firstName = acFirstName.get()
@@ -50,43 +44,43 @@ def accountValidation(acUserName, acFirstName, acLastName, acEmail, acPassword, 
     password = acPassword.get()
     confirmPassword = acConfirmPassword.get()
     adminPrivileges = acAdminPrivileges.get()
-
+    
     # Regex for email validation
     emailCheck = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
-
+    
     now = datetime.now() # Gets the current date and time
     timeCreated = now.strftime("%d/%m/%Y %H:%M:%S")
-
+    
     # Searches the database for all instances of the given username
     cursor = conn.execute(
         "SELECT * FROM appUsers Where userName = ?", [userName]).fetchall()
 
     if 0 in (len(userName), len(firstName), len(lastName), len(email), len(password), len(confirmPassword), len(adminPrivileges)):
         message = 'Some fields are blank \n Please fill all of them in'
-        accountcreationError(message, currentWindow, menuWindow)
-
+        accountcreationError(message, menuWindow)
+        
     if len(cursor) == 1:  # Checks that the username is not taken
         message = 'Username is already taken, please try a different one'
-        accountcreationError(message, currentWindow, menuWindow)
-
+        accountcreationError(message, menuWindow)
+        
     if not re.fullmatch(emailCheck, email):  # Checks against the regex that the email is valid
         message = 'Email not valid, please try again'
-        accountcreationError(message, currentWindow, menuWindow)
-
+        accountcreationError(message, menuWindow)
+        
     # Checking the password
     if password != confirmPassword:  # Checks that the passwords match
         message = 'Passwords do not match please try again'
-        accountcreationError(message, currentWindow, menuWindow)
+        accountcreationError(message, menuWindow)
 
     if len(password) < 6:  # Checks the length of the password
         message = 'Password is not strong enough \n Please use a minimum of 6 characters'
-        accountcreationError(message, currentWindow, menuWindow)
+        accountcreationError(message, menuWindow)
 
     # Checking if the created user should have admin privileges
-
+    
     adminYes = ['y', 'Y', 'yes', 'YES', 'Yes']
     adminNo = ['n', 'N', 'no', 'NO', 'No']
-
+    
     if adminPrivileges in adminYes:
         adminPrivileges = 1
 
@@ -95,30 +89,29 @@ def accountValidation(acUserName, acFirstName, acLastName, acEmail, acPassword, 
 
     else:
         message = 'Admin privileges not in correct form \n Please try again'
-        accountcreationError(message, currentWindow, menuWindow)
-
+        accountcreationError(message, menuWindow)
+        
     # Making the first letter of the first and last name caplital
     firstName = firstName.capitalize()
     lastName = lastName.capitalize()
-
+    
     # Making the characters of the email lowercase
     email = email.lower()
 
     # Encrypting the password
     password = password.encode("utf-8")
     password = base64.b64encode(password)
-
+        
     conn.execute("INSERT INTO appUsers(userName, hashedPassword, firstName, lastName, email, adminPrivileges, timeCreated) VALUES (?,?,?,?,?,?,?)", [
                  userName, password, firstName, lastName, email, adminPrivileges, timeCreated])  # Writes the information to the db
     conn.commit()
-    currentWindow.destroy()    
+    accountCreationWindow.destroy()    
 
 
 def createAccount(menuWindow):
     accountCreationWindow = tk.Toplevel(menuWindow)
     accountCreationWindow.geometry('390x410')
     accountCreationWindow.title('Create account')
-    currentWindow = accountCreationWindow
 
     spacer1 = tk.Label(accountCreationWindow, text ="").grid(row=0, column=0)
 
@@ -151,19 +144,19 @@ def createAccount(menuWindow):
     adminPrivilegesEntry = tk.Entry(accountCreationWindow, textvariable=acAdminPrivileges, width=30).grid(row=7, column=2)
 
     spacer2 = tk.Label(accountCreationWindow, text ="").grid(row=8, column=1)
-    validateAc = partial(accountValidation, acUserName, acFirstName, acLastName, acEmail, acPassword, acConfirmPassword, acAdminPrivileges, currentWindow, accountCreationWindow, menuWindow)
+    validateAc = partial(accountValidation, acUserName, acFirstName, acLastName, acEmail, acPassword, acConfirmPassword, acAdminPrivileges, accountCreationWindow, menuWindow)
     loginButton = tk.Button(accountCreationWindow, text="           Create account           ", command = validateAc).grid(row=9, column=2)
     spacer3 = tk.Label(accountCreationWindow, text =" ").grid(row=10, column=2)
-    exitButton = tk.Button(accountCreationWindow, text ="             Exit            ", command = lambda: [destroyWindow(currentWindow)]).grid(row=11, column=2)
+    exitButton = tk.Button(accountCreationWindow, text ="             Exit            ", command = accountCreationWindow.destroy()).grid(row=11, column=2)
     accountCreationWindow.mainloop()
-
+    
 
 
 def viewLogs(menuWindow):
     cursor = conn.execute("SELECT * FROM entryLog").fetchall()
     print(cursor)
-
-
+    
+    
 def unlock(lockWindow):
     conn.execute("Update doorStatus set lockStatus = 1 where id = 1")
     conn.commit()
@@ -206,8 +199,8 @@ def main(userName, firstName, lastName, email, adminPrivalges, loginTime, lastLo
     userSumarryDisplay = tk.Label(menuWindow, text = userSumarry,  justify="left", pady=10, padx=10)
     userSumarryDisplay.place(relx = 1.0, rely = 0.0, anchor ='ne')
 
-
-    if adminPrivalges is True:  
+    
+    if adminPrivalges == True:  
         #Create account button
         createAccountButton = tk.Button(menuWindow, text="      Create Account      ", command = lambda: [createAccount(menuWindow)], pady=10, padx=10)
         #Manage users button
@@ -219,23 +212,22 @@ def main(userName, firstName, lastName, email, adminPrivalges, loginTime, lastLo
         exitButton.place(relx = 0.5, rely = 0.7, anchor = 'center')
         unlockDoorButton.place(relx = 0.5, rely = 0.4, anchor = 'center')
 
-
+        
     else:
         viewLogButton.place(relx = 0.5, rely = 0.4, anchor = 'center')
         unlockDoorButton.place(relx = 0.5, rely = 0.5, anchor = 'center')
         exitButton.place(relx = 0.5, rely = 0.6, anchor = 'center')
-
+        
     menuWindow.mainloop()
 
 
 def login(username, password, window):
-    currentWindow = window
     userName = username.get()
     passwordToEncode = password.get()
 
     if 0 in (len(userName), len(passwordToEncode)):
         message = 'Please fill in the inputs'
-        loginError(message, currentWindow, window)
+        loginError(message, window)
 
     passwordToEncode = passwordToEncode.encode("utf-8")
     password = base64.b64encode(passwordToEncode)
@@ -243,7 +235,7 @@ def login(username, password, window):
 
     if len(cursor) == 0:
         message = 'Username or password incorrect'
-        loginError(message, currentWindow, window)
+        loginError(message, window)
 
     passwordToCheck = cursor[0][1]
 
@@ -272,25 +264,24 @@ def login(username, password, window):
 
     else:
         message = 'Username or password incorrect'
-        loginError(message, currentWindow, window)
+        loginError(message, window)
 
 
-def loginError(message, currentWindow, window):
+def loginError(message, window):
     popUp = tk.Toplevel(window)
     popUp.geometry('250x100')
     popUpWindow = popUp
     popUp.title('Alert!')
     label = tk.Label(popUp, text=message, font=normFont)
     label.pack(side="top", fill="x", pady=10)
-    button = tk.Button(popUp, text="Okay", command = lambda: [destroyPopUp(popUpWindow)])
+    button = tk.Button(popUp, text="Okay", command = popUpWindow.destroy())
     button.pack()
     popUp.mainloop()
-
-
+    
+    
 window = tk.Tk()
 window.geometry('347x195')
 window.title('Login')
-currentWindow = window
 spacer1 = tk.Label(window, text ="").grid(row=0, column=0)
 username = tk.StringVar()
 usernameLabel = tk.Label(window, text="User Name", pady=10, width=10, anchor='w').grid(row=1, column=1)
