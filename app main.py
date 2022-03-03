@@ -4,7 +4,6 @@ import sqlite3
 from tkinter import *
 import tkinter as tk
 from datetime import datetime
-from functools import partial
 
 conn = sqlite3.connect('System.db', check_same_thread = False)
 conn.execute('''CREATE TABLE if not exists appUsers
