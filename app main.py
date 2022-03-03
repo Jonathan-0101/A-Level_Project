@@ -1,6 +1,7 @@
 import re
 import base64
 import sqlite3
+from tkinter import *
 import tkinter as tk
 from datetime import datetime
 from functools import partial
@@ -25,11 +26,11 @@ smallFont = ("Helvetica", 8)
 def accountcreationError(message, menuWindow):
     popUp = tk.Toplevel(menuWindow)
     popUp.geometry('250x100')
-    popUpWindow = popUp
+    currentWindow = popUp
     popUp.title('Alert!')
     label = tk.Label(popUp, text = message, font = normFont)
     label.pack(side = "top", fill = "x", pady = 10)
-    button = tk.Button(popUp, text = "Okay", command = popUpWindow.destroy())
+    button = tk.Button(popUp, text = "Okay", command = lambda: [closeWindow(currentWindow)])
     button.pack()
     popUp.mainloop()
 
@@ -111,6 +112,7 @@ def createAccount(menuWindow):
     accountCreationWindow = tk.Toplevel(menuWindow)
     accountCreationWindow.geometry('390x410')
     accountCreationWindow.title('Create account')
+    currentWindow = accountCreationWindow
 
     spacer1 = tk.Label(accountCreationWindow, text ="").grid(row = 0, column = 0)
 
@@ -143,12 +145,10 @@ def createAccount(menuWindow):
     adminPrivilegesEntry = tk.Entry(accountCreationWindow, textvariable = acAdminPrivileges, width = 30).grid(row = 7, column = 2)
 
     spacer2 = tk.Label(accountCreationWindow, text = "").grid(row = 8, column = 1)
-    validateAc = partial(accountValidation, acUserName, acFirstName, acLastName, acEmail, acPassword, acConfirmPassword, acAdminPrivileges, accountCreationWindow, menuWindow)
-    loginButton = tk.Button(accountCreationWindow, text = "           Create account           ", command = validateAc).grid(row = 9, column = 2)
+    loginButton = tk.Button(accountCreationWindow, text = "           Create account           ", command = lambda:[accountValidation(acUserName, acFirstName, acLastName, acEmail, acPassword, acConfirmPassword, acAdminPrivileges, accountCreationWindow, menuWindow)]).grid(row = 9, column = 2)
     spacer3 = tk.Label(accountCreationWindow, text = " ").grid(row = 10, column = 2)
-    exitButton = tk.Button(accountCreationWindow, text = "             Exit            ", command = accountCreationWindow.destroy()).grid(row = 11, column = 2)
+    exitButton = tk.Button(accountCreationWindow, text = "             Exit            ", command = lambda: [closeWindow(currentWindow)]).grid(row = 11, column = 2)
     accountCreationWindow.mainloop()
-
 
 
 def viewLogs(menuWindow):
@@ -159,21 +159,22 @@ def viewLogs(menuWindow):
 def unlock(lockWindow):
     conn.execute("Update doorStatus set lockStatus = 1 where id = 1")
     conn.commit()
-    closeUnlockWindow(lockWindow)
+    lockWinow.destroy
 
 
-def closeUnlockWindow(lockWindow):
-    lockWindow.destroy()
+def closeWindow(currentWindow):
+    currentWindow.destroy()
 
 
 def unlockWindow(menuWindow):
     lockWindow = tk.Toplevel(menuWindow)
+    currentWindow = lockWindow
     lockWindow.geometry('150x160')
     lockWindow.title('Door lock')
     spacer1 = tk.Label(lockWindow, text = "", font = ("Arial Bold", 50))
     spacer2 = tk.Label(lockWindow, text = "             ").grid(column = 0, row = 0)
     unlockButton = tk.Button(lockWindow, text = "\n  Unlock  \n", command = lambda: [unlock(lockWindow)]).grid(row = 1, column =1)
-    exitButton = tk.Button(lockWindow, text = "\n     Exit     \n", command = lambda: [closeUnlockWindow(lockWindow)]).grid(row = 3, column =1)
+    exitButton = tk.Button(lockWindow, text = "\n     Exit     \n", command = lambda: [closeWindow(currentWindow)]).grid(row = 3, column =1)
     spacer4 = tk.Label(lockWindow, text = "\n").grid(row = 4, column = 1)
     lockWindow.mainloop()
 
@@ -269,11 +270,11 @@ def login(username, password, window):
 def loginError(message, window):
     popUp = tk.Toplevel(window)
     popUp.geometry('250x100')
-    popUpWindow = popUp
+    currentWindow = popUp
     popUp.title('Alert!')
     label = tk.Label(popUp, text = message, font = normFont)
     label.pack(side = "top", fill = "x", pady = 10)
-    button = tk.Button(popUp, text = "Okay", command = popUpWindow.destroy())
+    button = tk.Button(popUp, text = "Okay", command = lambda:[closeWindow(currentWindow)])
     button.pack()
     popUp.mainloop()
 
