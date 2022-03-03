@@ -159,7 +159,7 @@ def viewLogs(menuWindow):
 def unlock(lockWindow):
     conn.execute("Update doorStatus set lockStatus = 1 where id = 1")
     conn.commit()
-    lockWinow.destroy()
+    lockWindow.destroy()
 
 
 def closeWindow(currentWindow):
