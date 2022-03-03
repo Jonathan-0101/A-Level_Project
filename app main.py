@@ -5,7 +5,7 @@ import tkinter as tk
 from datetime import datetime
 from functools import partial
 
-conn = sqlite3.connect('System.db', check_same_thread=False)
+conn = sqlite3.connect('System.db', check_same_thread = False)
 conn.execute('''CREATE TABLE if not exists appUsers
   (userName VARCHAR PRIMARY KEY,
   hashedPassword INTEGER,
@@ -27,9 +27,9 @@ def accountcreationError(message, menuWindow):
     popUp.geometry('250x100')
     popUpWindow = popUp
     popUp.title('Alert!')
-    label = tk.Label(popUp, text=message, font=normFont)
-    label.pack(side="top", fill="x", pady=10)
-    button = tk.Button(popUp, text="Okay", command = popUpWindow.destroy())
+    label = tk.Label(popUp, text = message, font = normFont)
+    label.pack(side = "top", fill = "x", pady = 10)
+    button = tk.Button(popUp, text = "Okay", command = popUpWindow.destroy())
     button.pack()
     popUp.mainloop()
 
@@ -112,41 +112,41 @@ def createAccount(menuWindow):
     accountCreationWindow.geometry('390x410')
     accountCreationWindow.title('Create account')
 
-    spacer1 = tk.Label(accountCreationWindow, text ="").grid(row=0, column=0)
+    spacer1 = tk.Label(accountCreationWindow, text ="").grid(row = 0, column = 0)
 
     acUserName = tk.StringVar()
-    userNameLabel = tk.Label(accountCreationWindow, text="User Name", pady=10, width=22, anchor='w').grid(row=1, column=1)
-    userNameEntry = tk.Entry(accountCreationWindow, textvariable=acUserName, width=30).grid(row=1, column=2)
+    userNameLabel = tk.Label(accountCreationWindow, text = "User Name", pady = 10, width = 22, anchor = 'w').grid(row = 1, column = 1)
+    userNameEntry = tk.Entry(accountCreationWindow, textvariable = acUserName, width = 30).grid(row = 1, column = 2)
 
     acFirstName = tk.StringVar()
-    firstNameLabel = tk.Label(accountCreationWindow, text="First name", pady=10, width=22, anchor='w').grid(row=2, column=1)
-    firstNameEntry = tk.Entry(accountCreationWindow, textvariable=acFirstName, width=30).grid(row=2, column=2)
+    firstNameLabel = tk.Label(accountCreationWindow, text = "First name", pady = 10, width = 22, anchor = 'w').grid(row = 2, column = 1)
+    firstNameEntry = tk.Entry(accountCreationWindow, textvariable = acFirstName, width = 30).grid(row = 2, column = 2)
 
     acLastName = tk.StringVar()
-    lastNameLable = tk.Label(accountCreationWindow, text="Last name", pady=10, width=22, anchor='w').grid(row=3, column=1)
-    lastNameEntry = tk.Entry(accountCreationWindow, textvariable=acLastName, width=30).grid(row=3, column=2)
+    lastNameLable = tk.Label(accountCreationWindow, text = "Last name", pady = 10, width = 22, anchor = 'w').grid(row = 3, column = 1)
+    lastNameEntry = tk.Entry(accountCreationWindow, textvariable = acLastName, width = 30).grid(row = 3, column = 2)
 
     acEmail = tk.StringVar()
-    emailLable = tk.Label(accountCreationWindow, text="Email", pady=10, width=22, anchor='w').grid(row=4, column=1)
-    emailEntry = tk.Entry(accountCreationWindow, textvariable=acEmail, width=30).grid(row=4, column=2)
+    emailLable = tk.Label(accountCreationWindow, text = "Email", pady = 10, width = 22, anchor = 'w').grid(row = 4, column = 1)
+    emailEntry = tk.Entry(accountCreationWindow, textvariable = acEmail, width = 30).grid(row = 4, column = 2)
 
     acPassword = tk.StringVar()
-    passwordLabel = tk.Label(accountCreationWindow, text="Password", pady=10, width=22, anchor='w').grid(row=5, column=1)
-    passwordEntry = tk.Entry(accountCreationWindow, textvariable=acPassword, show='*', width=30).grid(row=5, column=2)
+    passwordLabel = tk.Label(accountCreationWindow, text = "Password", pady = 10, width = 22, anchor = 'w').grid(row = 5, column = 1)
+    passwordEntry = tk.Entry(accountCreationWindow, textvariable = acPassword, show = '*', width = 30).grid(row = 5, column = 2)
 
     acConfirmPassword = tk.StringVar()
-    confirmPasswordLabel = tk.Label(accountCreationWindow, text="Confirm password", pady=10, width=22, anchor='w').grid(row=6, column=1)
-    confirmPasswordEntry = tk.Entry(accountCreationWindow, textvariable=acConfirmPassword, show='*', width=30).grid(row=6, column=2)
+    confirmPasswordLabel = tk.Label(accountCreationWindow, text = "Confirm password", pady = 10, width = 22, anchor = 'w').grid(row = 6, column = 1)
+    confirmPasswordEntry = tk.Entry(accountCreationWindow, textvariable = acConfirmPassword, show = '*', width = 30).grid(row = 6, column = 2)
 
     acAdminPrivileges = tk.StringVar()
-    adminPrivilegesLable = tk.Label(accountCreationWindow, text ="Admin privalges (yes/no)", pady=10, width=22, anchor='w').grid(row=7, column=1)
-    adminPrivilegesEntry = tk.Entry(accountCreationWindow, textvariable=acAdminPrivileges, width=30).grid(row=7, column=2)
+    adminPrivilegesLable = tk.Label(accountCreationWindow, text = "Admin privalges (yes/no)", pady = 10, width = 22, anchor='w').grid(row = 7, column = 1)
+    adminPrivilegesEntry = tk.Entry(accountCreationWindow, textvariable = acAdminPrivileges, width = 30).grid(row = 7, column = 2)
 
-    spacer2 = tk.Label(accountCreationWindow, text ="").grid(row=8, column=1)
+    spacer2 = tk.Label(accountCreationWindow, text = "").grid(row = 8, column = 1)
     validateAc = partial(accountValidation, acUserName, acFirstName, acLastName, acEmail, acPassword, acConfirmPassword, acAdminPrivileges, accountCreationWindow, menuWindow)
-    loginButton = tk.Button(accountCreationWindow, text="           Create account           ", command = validateAc).grid(row=9, column=2)
-    spacer3 = tk.Label(accountCreationWindow, text =" ").grid(row=10, column=2)
-    exitButton = tk.Button(accountCreationWindow, text ="             Exit            ", command = accountCreationWindow.destroy()).grid(row=11, column=2)
+    loginButton = tk.Button(accountCreationWindow, text = "           Create account           ", command = validateAc).grid(row = 9, column = 2)
+    spacer3 = tk.Label(accountCreationWindow, text = " ").grid(row = 10, column = 2)
+    exitButton = tk.Button(accountCreationWindow, text = "             Exit            ", command = accountCreationWindow.destroy()).grid(row = 11, column = 2)
     accountCreationWindow.mainloop()
 
 
@@ -170,11 +170,11 @@ def unlockWindow(menuWindow):
     lockWindow = tk.Toplevel(menuWindow)
     lockWindow.geometry('150x160')
     lockWindow.title('Door lock')
-    spacer1 = tk.Label(lockWindow, text="", font=("Arial Bold", 50))
-    spacer2 = tk.Label(lockWindow, text="             ").grid(column=0, row=0)
-    unlockButton = tk.Button(lockWindow, text="\n  Unlock  \n", command=lambda: [unlock(lockWindow)]).grid(row=1, column=1)
-    exitButton = tk.Button(lockWindow, text = "\n     Exit     \n", command =lambda: [closeUnlockWindow(lockWindow)]).grid(row=3, column=1)
-    spacer4 = tk.Label(lockWindow, text ="\n").grid(row=4, column=1)
+    spacer1 = tk.Label(lockWindow, text = "", font = ("Arial Bold", 50))
+    spacer2 = tk.Label(lockWindow, text = "             ").grid(column = 0, row = 0)
+    unlockButton = tk.Button(lockWindow, text = "\n  Unlock  \n", command = lambda: [unlock(lockWindow)]).grid(row = 1, column =1)
+    exitButton = tk.Button(lockWindow, text = "\n     Exit     \n", command = lambda: [closeUnlockWindow(lockWindow)]).grid(row = 3, column =1)
+    spacer4 = tk.Label(lockWindow, text = "\n").grid(row = 4, column = 1)
     lockWindow.mainloop()
 
 
@@ -189,21 +189,21 @@ def main(userName, firstName, lastName, email, adminPrivalges, loginTime, lastLo
     menuWindow.geometry('360x500')
     menuWindow.title('Main menu')
     #View logs button
-    viewLogButton = tk.Button(menuWindow, text="           View Logs           ", command = lambda: [viewLogs(menuWindow)], pady=10, padx=10)
+    viewLogButton = tk.Button(menuWindow, text ="           View Logs           ", command = lambda: [viewLogs(menuWindow)], pady = 10, padx = 10)
     #Unlock door button
-    unlockDoorButton = tk.Button(menuWindow, text="         Unlock door         ", command = lambda: [unlockWindow(menuWindow)], pady=10, padx=10)
+    unlockDoorButton = tk.Button(menuWindow, text ="         Unlock door         ", command = lambda: [unlockWindow(menuWindow)], pady = 10, padx = 10)
     #Exit button
-    exitButton = tk.Button(menuWindow, text ="              Log off             ", command = exit, pady=10, padx=10)
+    exitButton = tk.Button(menuWindow, text ="              Log off             ", command = exit, pady = 10, padx = 10)
     #User summary print out
-    userSumarryDisplay = tk.Label(menuWindow, text = userSumarry,  justify="left", pady=10, padx=10)
-    userSumarryDisplay.place(relx = 1.0, rely = 0.0, anchor ='ne')
+    userSumarryDisplay = tk.Label(menuWindow, text = userSumarry,  justify="left", pady = 10, padx = 10)
+    userSumarryDisplay.place(relx = 1.0, rely = 0.0, anchor = 'ne')
 
 
     if adminPrivalges is True:  
         #Create account button
-        createAccountButton = tk.Button(menuWindow, text="      Create Account      ", command = lambda: [createAccount(menuWindow)], pady=10, padx=10)
+        createAccountButton = tk.Button(menuWindow, text = "      Create Account      ", command = lambda: [createAccount(menuWindow)], pady = 10, padx = 10)
         #Manage users button
-        manageUsersButton = tk.Button(menuWindow, text="       Manage Users       ", command = lambda: [manageUsers(menuWindow)], pady=10, padx=10)
+        manageUsersButton = tk.Button(menuWindow, text = "       Manage Users       ", command = lambda: [manageUsers(menuWindow)], pady = 10, padx = 10)
         #Placing the buttons
         createAccountButton.place(relx = 0.5, rely = 0.5, anchor = 'center')
         manageUsersButton.place(relx = 0.5, rely = 0.6, anchor = 'center')
@@ -271,9 +271,9 @@ def loginError(message, window):
     popUp.geometry('250x100')
     popUpWindow = popUp
     popUp.title('Alert!')
-    label = tk.Label(popUp, text=message, font=normFont)
-    label.pack(side="top", fill="x", pady=10)
-    button = tk.Button(popUp, text="Okay", command = popUpWindow.destroy())
+    label = tk.Label(popUp, text = message, font = normFont)
+    label.pack(side = "top", fill = "x", pady = 10)
+    button = tk.Button(popUp, text = "Okay", command = popUpWindow.destroy())
     button.pack()
     popUp.mainloop()
 
@@ -281,15 +281,15 @@ def loginError(message, window):
 window = tk.Tk()
 window.geometry('347x195')
 window.title('Login')
-spacer1 = tk.Label(window, text ="").grid(row=0, column=0)
+spacer1 = tk.Label(window, text = "").grid(row = 0, column = 0)
 username = tk.StringVar()
-usernameLabel = tk.Label(window, text="User Name", pady=10, width=10, anchor='w').grid(row=1, column=1)
-usernameEntry = tk.Entry(window, textvariable=username,  width=30).grid(row=1, column=2)
+usernameLabel = tk.Label(window, text = "User Name", pady = 10, width = 10, anchor='w').grid(row = 1, column = 1 )
+usernameEntry = tk.Entry(window, textvariable = username,  width = 30).grid(row = 1, column = 2)
 password = tk.StringVar()
-passwordLabel = tk.Label(window, text="Password", pady=10, width=10, anchor='w').grid(row=2, column=1)
-passwordEntry = tk.Entry(window, textvariable=password, show='*',  width=30).grid(row=2, column=2)
-loginButton = tk.Button(window, text="           Login           ", command = lambda: [login(username, password, window)]).grid(row=3, column=2)
-spacer2 = tk.Label(window, text =" ").grid(row=4, column=2)
-exitButton = tk.Button(window, text ="             Exit            ", command = exit).grid(row=5, column=2)
-spacer3 = tk.Label(window, text ="").grid(row=3, column=0)
+passwordLabel = tk.Label(window, text = "Password", pady = 10, width = 10, anchor = 'w').grid(row = 2, column = 1)
+passwordEntry = tk.Entry(window, textvariable = password, show = '*',  width = 30).grid(row = 2, column = 2)
+loginButton = tk.Button(window, text = "           Login           ", command = lambda: [login(username, password, window)]).grid(row = 3, column = 2)
+spacer2 = tk.Label(window, text = " ").grid(row = 4, column = 2)
+exitButton = tk.Button(window, text = "             Exit            ", command = exit).grid(row = 5, column = 2)
+spacer3 = tk.Label(window, text = "").grid(row = 3, column = 0)
 window.mainloop()
