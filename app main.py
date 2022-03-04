@@ -22,6 +22,10 @@ normFont = ("Helvetica", 10)
 smallFont = ("Helvetica", 8)
 
 
+def closeWindow(currentWindow):
+    currentWindow.destroy()
+
+
 def accountcreationError(message, menuWindow):
     popUp = tk.Toplevel(menuWindow)
     popUp.geometry('250x100')
@@ -159,10 +163,6 @@ def unlock(lockWindow):
     conn.execute("Update doorStatus set lockStatus = 1 where id = 1")
     conn.commit()
     lockWindow.destroy()
-
-
-def closeWindow(currentWindow):
-    currentWindow.destroy()
 
 
 def unlockWindow(menuWindow):
