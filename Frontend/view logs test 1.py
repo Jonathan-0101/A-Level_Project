@@ -28,7 +28,7 @@ def viewLogs():
     #Creating the windiow for the event display
     viewWindow = tk.Toplevel(menuWindow)
     viewWindow.geometry("1020x655")
-    
+
     currentWindow = viewWindow
 
     #Creating frame layer fo the tkinter tree view window
@@ -91,7 +91,7 @@ def viewLogs():
     #Creating button to view video and exit when done
     Button(viewWindow, text="Display event video", command = lambda: [showSelected(tree, entryLogList)], pady = 5, padx = 5 ).pack()
     Button(viewWindow, text="              Exit              ", command = lambda: [closeWindow(currentWindow)], pady = 5, padx = 5 ).pack()
-    
+
     viewWindow.mainloop()
 
 viewLogs()
