@@ -245,7 +245,7 @@ def viewLogs(menuWindow):
 
 
 def unlock(lockWindow):
-    conn.execute("Update doorStatus set lockStatus = 1 where id = 1")
+    conn.execute("Update doorStatus set lockStatus = 1")
     conn.commit()
     lockWindow.destroy()
 
@@ -378,6 +378,4 @@ loginButton = Button(window, text="           Login           ", command=lambda:
 spacer2 = Label(window, text=" ").grid(row=4, column=2)
 exitButton = Button(window, text="             Exit            ", command=exit).grid(row=5, column=2)
 spacer3 = Label(window, text="").grid(row=3, column=0)
-loginEnter = partial(login, username, password, window)
-window.bind('<Return>', loginEnter)
 window.mainloop()
