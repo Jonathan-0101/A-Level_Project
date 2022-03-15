@@ -10,7 +10,6 @@ def lock():
     print('Door locked')
     menu()
 
-
 def unlock():
     Relay_PIN = 4
     GPIO.setup(Relay_PIN, GPIO.OUT)
@@ -18,8 +17,8 @@ def unlock():
     print('Door unclocked')
     menu()
 
-
 def menu():
+    #Creating menu options for testing
     x = input("Lock or unlock? ")
     if x == 'l':
         lock()
@@ -29,6 +28,5 @@ def menu():
         print("Error")
         print("Try again")
         menu()
-
 
 menu()
