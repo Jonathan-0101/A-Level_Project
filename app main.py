@@ -136,9 +136,9 @@ def createAccount(menuWindow):
     confirmPasswordLabel = Label(accountCreationWindow, text="Confirm password", pady=10, width=22, anchor='w').grid(row=6, column=1)
     confirmPasswordEntry = Entry(accountCreationWindow, textvariable=acConfirmPassword, show='*', width=30).grid(row=6, column=2)
 
-    adminPrivileges = IntVar()
+    acAdminPrivileges = IntVar()
     adminLable = Label(accountCreationWindow, text="Admin privlages", pady=10, width=22, anchor='w').grid(row=7, column=1)
-    Checkbutton(accountCreationWindow, text="                                                       ", variable=adminPrivileges).grid(row=7, column=2)
+    Checkbutton(accountCreationWindow, text="                                                       ", variable=acAdminPrivileges).grid(row=7, column=2)
 
     spacer2 = Label(accountCreationWindow, text="").grid(row=8, column=1)
     loginButton = Button(accountCreationWindow, text="           Create account           ", command=lambda:[accountValidation(acUserName, acFirstName, acLastName, acEmail, acPassword, acConfirmPassword, acAdminPrivileges, accountCreationWindow, menuWindow)]).grid(row=9, column=2)
