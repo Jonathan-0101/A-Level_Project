@@ -80,10 +80,6 @@ def accountValidation(acUserName, acFirstName, acLastName, acEmail, acPassword, 
         message = 'Password is not strong enough \n Please use a minimum of 6 characters'
         popUpWindow(title, message, menuWindow)
 
-    else:
-        message = 'Admin privileges not in correct form \n Please try again'
-        popUpWindow(title, message, menuWindow)
-
     # Making the first letter of the first and last name caplital
     firstName = firstName.capitalize()
     lastName = lastName.capitalize()

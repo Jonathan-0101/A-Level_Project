@@ -1,7 +1,7 @@
 import re
 import sys
 import time
-import base64
+import hashlib
 import sqlite3
 from datetime import datetime
 
@@ -27,7 +27,6 @@ def createAccount():  # Function to create account
     firstName = input("First name: ")
     lastName = input("Last name: ")
     email = input("Email: ")
-    confirmEmail = input("Confirm email: ")
     password = input("Password: ")
     confirmPassword = input("Confirm password: ")
     admin = input("Admin privaleges (y/n): ")
@@ -39,32 +38,35 @@ def createAccount():  # Function to create account
     cursor = conn.execute(
         "SELECT * FROM appUsers Where userName = ?", [userName]).fetchall()
 
+    if 0 in [len(userName), len(firstName), len(lastName), len(email), len(email), len(password), len(confirmPassword), len(admin)]:
+        print("Some fields are blank \nPlease fill them all in")
+        time.sleep(2)
+        print('\n'*10)
+        exit()
+    
     if len(cursor) == 1:  # Checks that the username is not taken
-        print("Username is already taken, please try a different one")
+        print("Username is already taken \nPlease try a different one")
         time.sleep(2)
-        createAccount()
-
-    if email != confirmEmail:  # Checks that the emails match
-        print("Emails do not match please try again")
-        time.sleep(2)
-        createAccount()
+        print('\n'*10)
+        exit()
 
     if not re.fullmatch(emailCheck, email):  # Checks against the regex that the email is valid
         print("Email not valid, please try again")
         time.sleep(2)
-        createAccount()
+        print('\n'*10)
+        exit()
 
     # Checking the password
     if password != confirmPassword:  # Checks that the passwords match
         print("Passwords do not match please try again")
-        time.sleep(2)
-        createAccount()
+        print('\n'*10)
+        exit()
 
     if len(password) < 6:  # Checks the length of the password
         print("Password is not strong enough")
         print("Please use a minimum of 6 characters")
-        time.sleep(2)
-        createAccount()
+        print('\n'*10)
+        exit()
 
     # Checking if the created user should have admin privileges
     if admin == 'y' or 'Y':
@@ -75,8 +77,8 @@ def createAccount():  # Function to create account
 
     elif admin != 'y' or 'Y' or 'n' or 'N':
         print("Admin privileges not in correct form please try again")
-        time.sleep(2)
-        createAccount()
+        print('\n'*10)
+        exit()
 
     # Making the first letter of the first and last name caplital
     firstName = firstName.capitalize()
@@ -86,12 +88,10 @@ def createAccount():  # Function to create account
     email = email.lower()
 
     # Encrypting the password
-    password = password.encode("utf-8")
-    password = base64.b64encode(password)
+    password = password.encode()
+    password = hashlib.sha3_512(password).hexdigest()
 
-    conn.execute("INSERT INTO appUsers(userName, hashedPassword, firstName, lastName, email, adminPrivileges, timeCreated) VALUES (?,?,?,?,?,?,?)", [
-                    userName, password, firstName, lastName, email, adminPrivileges, timeCreated])  # Writes the information to the db
-    conn.commit()
+    print("Account created sucsesfully")
 
 
 def menu():
@@ -103,9 +103,13 @@ def menu():
         counter += 1
     response = (input("\n Please select option \n"))
     if response == '1':
+        print("\n"*10)
         createAccount()
+        print("\n"*10)
         menu()
+        print
     if response == '2':
+        print()
         sys.exit()
     else:
         print("Error please select a valid option")
