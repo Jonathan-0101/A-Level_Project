@@ -6,8 +6,8 @@ reader = SimpleMFRC522()
 print("Hold a tag near the reader")
 
 try:
-    id, text = reader.read(timeout=5)
-    if id == None:
+    cardId, text = reader.read(timeout=5)
+    if cardId == None:
         print("Timedout before card was read")
     else: 
         print(id)

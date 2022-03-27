@@ -4,18 +4,20 @@ import sqlite3
 #Connecting to the database
 conn = sqlite3.connect('System.db', check_same_thread = False)
 
+print('\n'*10)
+
 entryLogList = []
 
 #Retriving information from the database
 entryLog = conn.execute("SELECT * FROM entryLog").fetchall()
 
 #For loop to populate the data list
-for i in range(len(entryLog)):
-    eventId = entryLog[i][0]
-    entry = entryLog[i][1]
-    if entry is 1:
+for event in entryLog:
+    eventId = event[0]
+    entry = event[1]
+    if entry == 1:
         entry = "Entry"
-        userId = entryLog[i][2]
+        userId = event[2]
         userDetails = conn.execute("SELECT firstName, lastName FROM idCards WHERE id = ?", (userId, )).fetchall()
         firstName = userDetails[0][0]
         lastName = userDetails[0][1]
@@ -24,8 +26,10 @@ for i in range(len(entryLog)):
         entry = "No entry"
         firstName = None
         lastName = None
-    dateTime = entryLog[i][3]
+    dateTime = event[3]
     logInfo = [eventId, entry, userId, firstName, lastName, dateTime]
     entryLogList.append(logInfo)
-for x in range(len(entryLogList)):
-    print(entryLogList[x])
+for logItem in entryLogList:
+    print(logItem)
+
+print('\n'*10)

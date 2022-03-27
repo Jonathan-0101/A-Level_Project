@@ -107,7 +107,6 @@ def menu():
         createAccount()
         print("\n"*10)
         menu()
-        print
     if response == '2':
         print()
         sys.exit()

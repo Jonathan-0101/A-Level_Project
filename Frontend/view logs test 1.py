@@ -26,8 +26,9 @@ def showSelected(tree, entryLogList):
 
 def viewLogs():
     #Creating the windiow for the event display
-    viewWindow = tk.Toplevel(menuWindow)
+    viewWindow = tk.Tk()
     viewWindow.geometry("1020x655")
+    viewWindow.title("Event view")
 
     currentWindow = viewWindow
 

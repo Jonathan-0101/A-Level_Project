@@ -123,9 +123,18 @@ GPIO.add_event_detect(14, GPIO.FALLING, callback=pir, bouncetime=100) # Checks f
 try:
     while True: # Loops the check for motion
         time.sleep(0.5)
-
-except KeyboardInterrupt:
-    print("\nScript ended")
+        # Retriveing the doorStatus value from the table
+        cursor = conn.execute("SELECT * FROM door Status").fetchall()
+        # Checks if the value is equal to 1 (whether it should open)
+        if cursor[0][0] == 1:
+            # Calls unlock function and then locking function
+            unlock()
+            lock()
+            # Adds a time delay before the table is checked again
+            time.sleep(0.5)
+        else:
+            # Adds a time delay before the table is checked again
+            time.sleep(0.5)
 
 finally:
     GPIO.cleanup()

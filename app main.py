@@ -10,17 +10,6 @@ from datetime import datetime
 
 conn = sqlite3.connect('System.db', check_same_thread=False)
 
-conn.execute('''CREATE TABLE if not exists appUsers
-  (userName VARCHAR PRIMARY KEY,
-  hashedPassword INTEGER,
-  firstName TEXT,
-  lastName TEXT,
-  email VARCHAR,
-  adminPrivileges INTEGER,
-  timeCreated DATETIME);''')
-conn.commit()
-
-
 def closeWindow(currentWindow):
     currentWindow.destroy()
 
@@ -201,12 +190,13 @@ def viewLogs(menuWindow):
     entryLogList = []
 
     #Populating the table with events, with most recent events at the top
-    for i in range(len(entryLog)):
-        eventId = entryLog[i][0]
-        entry = entryLog[i][1]
+    loopNum = 0
+    for event in entryLog:
+        eventId = event[0]
+        entry = event[1]
         if entry == 1:
             entry = "Entry"
-            userId = entryLog[i][2]
+            userId = event[2]
             userDetails = conn.execute("SELECT firstName, lastName FROM idCards WHERE id = ?", (userId, )).fetchall()
             firstName = userDetails[0][0]
             lastName = userDetails[0][1]
@@ -215,10 +205,11 @@ def viewLogs(menuWindow):
             entry = "No entry"
             firstName = None
             lastName = None
-        dateTime = entryLog[i][3]
+        dateTime = event[3]
         logInfo = [eventId, entry, userId, firstName, lastName, dateTime]
         entryLogList.append(logInfo)
-        pos = ("L",(i+1))
+        loopNum += 1 
+        pos = ("L",(loopNum))
         tree.insert("", "end", text=pos, values = (eventId, entry, firstName, lastName, dateTime))
 
     style = ttk.Style()
@@ -265,8 +256,9 @@ def manageUsers(menuWindow):
 
 
 def main(userName, firstName, email, adminPrivalges, loginTime, lastLogIn):
-    userSumarry = 'Username: ' + userName + '\nFirst name: ' + firstName + '\nEmail: ' + email + '\nLog in time: ' + loginTime + '\nLast Log In: ' + lastLogIn
-    menuWindow = tk.Tk()
+    # Creating the user summary
+    userSummary = ('Username: ' + userName + '\nFirst name: ' + firstName + '\nEmail: ' + email + '\nLog in time: ' + loginTime + '\nLast Log In: ' + lastLogIn)
+    menuWindow = tk.Tk() # Creating window
     menuWindow.geometry('360x500')
     menuWindow.title('Main menu')
     #View logs button
@@ -276,11 +268,11 @@ def main(userName, firstName, email, adminPrivalges, loginTime, lastLogIn):
     #Exit button
     exitButton = Button(menuWindow, text ="              Log off             ", command=exit, pady=10, padx=10)
     #User summary print out
-    userSumarryDisplay = Label(menuWindow, text=userSumarry,  justify="left", pady=10, padx=10)
+    userSumarryDisplay = Label(menuWindow, text=userSummary,  justify="left", pady=10, padx=10)
     userSumarryDisplay.place(relx=1.0, rely=0.0, anchor='ne')
 
 
-    if adminPrivalges is True:  
+    if adminPrivalges == True:  # Function that adds in the extra features for admin users
         #Create account button
         createAccountButton = Button(menuWindow, text="      Create Account      ", command=lambda:[createAccount(menuWindow)], pady=10, padx=10)
         #Manage users button
@@ -293,7 +285,7 @@ def main(userName, firstName, email, adminPrivalges, loginTime, lastLogIn):
         unlockDoorButton.place(relx=0.5, rely=0.4, anchor='center')
 
 
-    else:
+    else: # Puts the buttons in their location if the user is not an admin
         viewLogButton.place(relx=0.5, rely=0.4, anchor='center')
         unlockDoorButton.place(relx=0.5, rely=0.5, anchor='center')
         exitButton.place(relx=0.5, rely=0.6, anchor='center')
@@ -330,7 +322,8 @@ def login(username, password, window):
       conn.execute("UPDATE appUsers SET lastLogIn = ? WHERE userName = ?", (logInTimeForDB, userName))
       conn.commit()
       loginTime = now.strftime("%H:%M")
-
+      message = "Logged in successfully"
+    
       if adminPrivalges == 1:
           adminPrivalges = True
           window.destroy()
@@ -361,18 +354,20 @@ largefont=("Verdana", 12)
 normfont=("Helvetica", 10)
 smallfontd=("Helvetica", 8)
 
-window = tk.Tk()
+window = tk.Tk() # Creating window for login system
 window.geometry('347x195')
-window.title('Login')
+window.title('Login') # Setting the title for window
 spacer1 = Label(window, text="").grid(row=0, column=0)
 username = StringVar()
 usernameLabel = Label(window, text="User Name", pady=10, padx=10, width=10, anchor='w').grid(row=1, column=1 )
-usernameEntry = Entry(window, textvariable=username,  width=30).grid(row=1, column=2)
+usernameEntry = Entry(window, textvariable=username,  width=30).grid(row=1, column=2) # Username entry
 password = StringVar()
 passwordLabel = Label(window, text="Password", pady=10, padx=10, width=10, anchor='w').grid(row=2, column=1)
-passwordEntry = Entry(window, textvariable=password, show='*', width=30).grid(row=2, column=2)
+passwordEntry = Entry(window, textvariable=password, show='*', width=30).grid(row=2, column=2) # Password entry
+# Login button
 loginButton = Button(window, text="           Login           ", command=lambda:[login(username, password, window)]).grid(row=3, column=2)
 spacer2 = Label(window, text=" ").grid(row=4, column=2)
+# Exit button
 exitButton = Button(window, text="             Exit            ", command=exit).grid(row=5, column=2)
 spacer3 = Label(window, text="").grid(row=3, column=0)
 window.mainloop()

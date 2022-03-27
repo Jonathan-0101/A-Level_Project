@@ -4,5 +4,4 @@
 
 [![DeepSource](https://deepsource.io/gh/Jonathan-0101/Project.svg/?label=active+issues&show_trend=true&token=Kl-6WmqBVyoPyQdpK6mhkGZb)](https://deepsource.io/gh/Jonathan-0101/Project/?ref=repository-badge) [![DeepSource](https://deepsource.io/gh/Jonathan-0101/Project.svg/?label=resolved+issues&show_trend=true&token=Kl-6WmqBVyoPyQdpK6mhkGZb)](https://deepsource.io/gh/Jonathan-0101/Project/?ref=repository-badge) 
 
-
 [Project board](https://github.com/Jonathan-0101/Project/projects/1)
