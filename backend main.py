@@ -83,7 +83,7 @@ def pir(pin): # Function for running the events when motion is detected
     fileName = (path + "\\Recordings\\" + videoFileName + ".h264")
     camera = PiCamera() # Setting the camera that will be used
     camera.resolution = (1920, 1080)
-    camera.framerate = 32 # Sets the frame rate of the camera
+    camera.framerate = 30 # Sets the frame rate of the camera
     camera.start_preview(alpha=200)
     time.sleep(0.1) # Delay for camera preview to start up
     camera.start_recording(fileName) # Starts the recording
