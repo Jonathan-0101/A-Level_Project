@@ -124,7 +124,7 @@ try:
     while True: # Loops the check for motion
         time.sleep(0.5)
         # Retriveing the doorStatus value from the table
-        cursor = conn.execute("SELECT * FROM door Status").fetchall()
+        cursor = conn.execute("SELECT * FROM doorStatus").fetchall()
         # Checks if the value is equal to 1 (whether it should open)
         if cursor[0][0] == 1:
             # Calls unlock function and then locking function

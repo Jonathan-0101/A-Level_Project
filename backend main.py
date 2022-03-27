@@ -117,6 +117,8 @@ def pir(pin): # Function for running the events when motion is detected
         conn.commit()
 
 lock() # Calling the lock function on statrup to lock the door incase there is a power loss
+camera = PiCamera()
+camera.close()
 
 GPIO.add_event_detect(14, GPIO.FALLING, callback=pir, bouncetime=100) # Checks for motion
 
