@@ -2,7 +2,7 @@
 import sqlite3
 
 #Connecting to the database
-conn = sqlite3.connect('System.db', check_same_thread = False)
+conn = sqlite3.connect('database.db', check_same_thread = False)
 
 print('\n'*10)
 

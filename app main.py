@@ -8,7 +8,7 @@ from tkinter import *
 from tkinter import ttk
 from datetime import datetime
 
-conn = sqlite3.connect('System.db', check_same_thread=False)
+conn = sqlite3.connect('database.db', check_same_thread=False)
 
 def closeWindow(currentWindow):
     currentWindow.destroy()

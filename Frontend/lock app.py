@@ -2,7 +2,7 @@ import sqlite3
 from tkinter import *
 
 
-conn = sqlite3.connect('System.db', check_same_thread=False)
+conn = sqlite3.connect('database.db', check_same_thread=False)
 
 def unlock(lockWindow):
     conn.execute("Update doorStatus set lockStatus = 1 where id = 1")

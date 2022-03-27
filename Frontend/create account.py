@@ -6,7 +6,7 @@ import sqlite3
 from datetime import datetime
 
 # Connects to the DataBase
-conn = sqlite3.connect('System.db', check_same_thread=False)
+conn = sqlite3.connect('database.db', check_same_thread=False)
 conn.execute('''CREATE TABLE if not exists appUsers
   (userName VARCHAR PRIMARY KEY,
   hashedPassword INTEGER,

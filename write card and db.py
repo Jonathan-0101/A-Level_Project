@@ -5,14 +5,21 @@ import RPi.GPIO as GPIO
 from mfrc522 import SimpleMFRC522
 from datetime import datetime
 
-conn = sqlite3.connect("System.db")  # Connects to the Database
+conn = sqlite3.connect('database.db', check_same_thread=False) # Connects to the Database
+
+conn.execute("DROP TABLE idCards")
+conn.commit()
+
+conn = sqlite3.connect('database.db', check_same_thread=False) # Connects to the Database
+
 conn.execute('''CREATE TABLE if not exists idCards 
   (id INTEGER PRIMARY KEY AUTOINCREMENT,
-  hashedId INTEGER,
+  cardId INTEGER,
   cardName VARCHAR,
   firstName TEXT,
   lastName TEXT,
-  timeCreated DATETIME);''')   # Creates the dable if it does not exist
+  active INTEGER,
+  timeCreated DATETIME)''')   # Creates the table if it does not exist
 conn.commit()   # Commits it to the database
 
 # Sets up the GPIO pins and defines the reader
@@ -29,20 +36,19 @@ def writeCard():    # Function for writing the card and db
     print("Now place your tag to write")
     reader.write(text)
     print("Written")
-    cardId, text = reader.read()    # Reading the card
-    cardId = cardId % 1999  # Hashing the cardId
+    cardId, text = reader.read() # Reading the card
     print()
     conn.execute(
-        "INSERT INTO idCards(hashedId, cardName, firstName, lastName, timeCreated) VALUES (?,?,?,?,?)",
-        [cardId, text, firstName, lastName, timeCreated],
+        "INSERT INTO idCards(cardId, cardName, firstName, lastName, active, timeCreated) VALUES (?,?,?,?,?,?)",
+        [cardId, text, firstName, lastName, 1, timeCreated],
     )   # Writes the information to the db
     conn.commit()
 
 
 def readCard(): # Function for reading the card
     print("Hold a tag near the reader")
-    ID, text = reader.read()
-    print("ID: %s\nText: %s" % (ID, text))
+    cardId, text = reader.read()
+    print("ID: %s\nText: %s" % (cardId, text))
     print()
 
 

@@ -5,7 +5,7 @@ from tkinter import *
 from datetime import datetime
 from functools import partial
 
-conn = sqlite3.connect('System.db', check_same_thread=False)
+conn = sqlite3.connect('database.db', check_same_thread=False)
 
 largeFont= ("Verdana", 12)
 normFont = ("Helvetica", 10)

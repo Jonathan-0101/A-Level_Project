@@ -6,7 +6,7 @@ Relay_PIN = 4
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
 
-conn = sqlite3.connect("System.db", check_same_thread=False)
+conn = sqlite3.connect("database.db", check_same_thread=False)
 
 def unlock():
     # Function for unlocking the door

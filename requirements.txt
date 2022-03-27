@@ -1,3 +1,0 @@
-mfrc522==0.0.7
-picamera==1.13
-tk_toolkit==1.0.1
