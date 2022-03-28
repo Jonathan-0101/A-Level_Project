@@ -35,8 +35,7 @@ def writeCard():    # Function for writing the card and db
     print()
     conn.execute(
         "INSERT INTO idCards(cardId, cardName, firstName, lastName, active, timeCreated) VALUES (?,?,?,?,?,?)",
-        (cardId, text, firstName, lastName, 1, timeCreated),
-    )   # Writes the information to the db
+        (cardId, text, firstName, lastName, 1, timeCreated)) # Writes the information to the db
     conn.commit()
 
 

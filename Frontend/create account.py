@@ -36,7 +36,7 @@ def createAccount():  # Function to create account
 
     # Searches the database for all instances of the given username
     cursor = conn.execute(
-        "SELECT * FROM appUsers Where userName = ?", [userName]).fetchall()
+        "SELECT * FROM appUsers Where userName = ?", (userName)).fetchall()
 
     if 0 in [len(userName), len(firstName), len(lastName), len(email), len(email), len(password), len(confirmPassword), len(admin)]:
         print("Some fields are blank \nPlease fill them all in")

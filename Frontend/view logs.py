@@ -18,7 +18,7 @@ for event in entryLog:
     if entry == 1:
         entry = "Entry"
         userId = event[2]
-        userDetails = conn.execute("SELECT firstName, lastName FROM idCards WHERE id = ?", (userId, )).fetchall()
+        userDetails = conn.execute("SELECT firstName, lastName FROM idCards WHERE id = ?", (userId)).fetchall()
         firstName = userDetails[0][0]
         lastName = userDetails[0][1]
     else:

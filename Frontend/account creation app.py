@@ -50,7 +50,7 @@ def accountValidation(userName, firstName, lastName, email, password, confirmPas
 
     # Searches the database for all instances of the given username
     cursor = conn.execute(
-        "SELECT * FROM appUsers Where userName = ?", [userName]).fetchall()
+        "SELECT * FROM appUsers Where userName = ?", (userName)).fetchall()
 
     if 0 in (len(userName), len(firstName), len(lastName), len(email), len(password), len(confirmPassword), len(admin)):
         message = 'Some fields are blank \n Please fill all of them in'
@@ -99,8 +99,8 @@ def accountValidation(userName, firstName, lastName, email, password, confirmPas
     password = password.encode("utf-8")
     password = base64.b64encode(password)
 
-    conn.execute("INSERT INTO appUsers(userName, hashedPassword, firstName, lastName, email, adminPrivileges, timeCreated) VALUES (?,?,?,?,?,?,?)", [
-                 userName, password, firstName, lastName, email, adminPrivileges, timeCreated])  # Writes the information to the db
+    conn.execute("INSERT INTO appUsers(userName, hashedPassword, firstName, lastName, email, adminPrivileges, timeCreated) VALUES (?,?,?,?,?,?,?)", (
+                 userName, password, firstName, lastName, email, adminPrivileges, timeCreated))  # Writes the information to the db
     conn.commit()
     currentWindow.destroy()    
 
