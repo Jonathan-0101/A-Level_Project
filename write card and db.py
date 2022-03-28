@@ -7,11 +7,6 @@ from datetime import datetime
 
 conn = sqlite3.connect('database.db', check_same_thread=False) # Connects to the Database
 
-conn.execute("DROP TABLE idCards")
-conn.commit()
-
-conn = sqlite3.connect('database.db', check_same_thread=False) # Connects to the Database
-
 conn.execute('''CREATE TABLE if not exists idCards 
   (id INTEGER PRIMARY KEY AUTOINCREMENT,
   cardId INTEGER,
@@ -40,7 +35,7 @@ def writeCard():    # Function for writing the card and db
     print()
     conn.execute(
         "INSERT INTO idCards(cardId, cardName, firstName, lastName, active, timeCreated) VALUES (?,?,?,?,?,?)",
-        [cardId, text, firstName, lastName, 1, timeCreated],
+        (cardId, text, firstName, lastName, 1, timeCreated),
     )   # Writes the information to the db
     conn.commit()
 

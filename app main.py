@@ -80,8 +80,8 @@ def accountValidation(acUserName, acFirstName, acLastName, acEmail, acPassword, 
     password = password.encode()
     password = hashlib.sha3_512(password).hexdigest()
 
-    conn.execute("INSERT INTO appUsers(userName, hashedPassword, firstName, lastName, email, adminPrivileges, timeCreated, lastLogIn) VALUES (?,?,?,?,?,?,?,?)", [
-                 userName, password, firstName, lastName, email, adminPrivileges, timeCreated, logInTimeForDB])  # Writes the information to the db
+    conn.execute("INSERT INTO appUsers(userName, hashedPassword, firstName, lastName, email, adminPrivileges, timeCreated, lastLogIn) VALUES (?,?,?,?,?,?,?,?)", (
+                 userName, password, firstName, lastName, email, adminPrivileges, timeCreated, logInTimeForDB))  # Writes the information to the db
     conn.commit()
     title = "Alert!"
     message = "User created successfully"
@@ -197,7 +197,7 @@ def viewLogs(menuWindow):
         if entry == 1:
             entry = "Entry"
             userId = event[2]
-            userDetails = conn.execute("SELECT firstName, lastName FROM idCards WHERE id = ?", (userId, )).fetchall()
+            userDetails = conn.execute("SELECT firstName, lastName FROM idCards WHERE id = ?", (userId)).fetchall()
             firstName = userDetails[0][0]
             lastName = userDetails[0][1]
         else:
@@ -303,7 +303,7 @@ def login(username, password, window):
 
     passwordToEncode = passwordToEncode.encode()
     password = hashlib.sha3_512(passwordToEncode).hexdigest()
-    cursor = conn.execute("SELECT * FROM appUsers Where userName = ?", [userName, ]).fetchall()
+    cursor = conn.execute("SELECT * FROM appUsers Where userName = ?", (userName)).fetchall()
 
     if len(cursor) == 0:
         message = 'Username or password incorrect'

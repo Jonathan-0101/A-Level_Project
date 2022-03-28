@@ -87,14 +87,14 @@ def pir(pin): # Function for running the events when motion is detected
     cardId = cardId # Hashing the cardId
 
     # Checks if the card is authorised
-    cursor = conn.execute("SELECT text FROM idCards Where cardId = ? and cardName = ? and active = 1", [cardId, cardName]).fetchall()
+    cursor = conn.execute("SELECT text FROM idCards Where cardId = ? and cardName = ? and active = 1", (cardId, cardName)).fetchall()
     cardCheck = cursor[0]
 
     if len(cardCheck) == 1:
         print('Authorised')
         authorised = True
         # Adds the event into the entry log
-        conn.execute("INSERT INTO entryLog(authorised, userId, dateTime) VALUES (?,?,?)", [authorised, cardId, dateTime])
+        conn.execute("INSERT INTO entryLog(authorised, userId, dateTime) VALUES (?,?,?)", (authorised, cardId, dateTime))
         conn.commit()
         unlock(fileName, camera) # Calls the function to unlock the door
 
@@ -105,7 +105,7 @@ def pir(pin): # Function for running the events when motion is detected
         camera.stop_recording()
         camera.stop_preview()
         # Adds the event to the events log
-        conn.execute("INSERT INTO entryLog(authorised, dateTime) VALUES (?,?)", [authorised, dateTime])
+        conn.execute("INSERT INTO entryLog(authorised, dateTime) VALUES (?,?)", (authorised, dateTime))
         conn.commit()
 
 lock() # Calling the lock function on statrup to lock the door incase there is a power loss
