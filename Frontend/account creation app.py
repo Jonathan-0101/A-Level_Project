@@ -1,9 +1,13 @@
+import os
 import re
+import ssl
 import base64
 import sqlite3
+import smtplib
 from tkinter import *
 from datetime import datetime
 from functools import partial
+from dotenv import load_dotenv
 
 conn = sqlite3.connect('database.db', check_same_thread=False)
 
@@ -30,6 +34,39 @@ def accountcreationError(message, currentWindow):
     button.pack()
     popUp.mainloop()
 
+def emailUser(email, userName):
+    load_dotenv()
+
+    gmail_user = os.getenv('emailAccount')
+    gmail_password = os.getenv('emailPassword')
+
+    userName = 'Jonathan Woolf'
+
+    to = [email]
+    subject = 'Account Created'
+    body = """\
+    An account has just been created for you on iSpy!
+    Your username is: """ + userName + """
+    If you do not know the password, please contact your administrator.
+    """
+
+    email_text = """\
+    From: %s
+    To: %s
+    Subject: %s
+
+    %s
+    """ % (gmail_user, ", ".join(to), subject, body)
+
+    try:
+        smtp_server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
+        smtp_server.ehlo()
+        smtp_server.login(gmail_user, gmail_password)
+        smtp_server.sendmail(gmail_user, to, email_text)
+        smtp_server.close()
+
+    except Exception as ex:
+        print ("Something went wrong….",ex)
 
 def accountValidation(userName, firstName, lastName, email, password, confirmPassword, adminPrivileges, accountCreationWindow):
     currentWindow = accountCreationWindow
@@ -48,9 +85,9 @@ def accountValidation(userName, firstName, lastName, email, password, confirmPas
     now = datetime.now() # Gets the current date and time
     timeCreated = now.strftime("%d/%m/%Y %H:%M:%S")
 
+    print(userName)
     # Searches the database for all instances of the given username
-    cursor = conn.execute(
-        "SELECT * FROM appUsers Where userName = ?", (userName)).fetchall()
+    cursor = conn.execute("SELECT * FROM appUsers Where userName = ?", [userName]).fetchall()
 
     if 0 in (len(userName), len(firstName), len(lastName), len(email), len(password), len(confirmPassword), len(admin)):
         message = 'Some fields are blank \n Please fill all of them in'
@@ -99,8 +136,10 @@ def accountValidation(userName, firstName, lastName, email, password, confirmPas
     password = password.encode("utf-8")
     password = base64.b64encode(password)
 
-    conn.execute("INSERT INTO appUsers(userName, hashedPassword, firstName, lastName, email, adminPrivileges, timeCreated) VALUES (?,?,?,?,?,?,?)", (
-                 userName, password, firstName, lastName, email, adminPrivileges, timeCreated))  # Writes the information to the db
+    emailUser(email, userName)
+    
+    conn.execute("INSERT INTO appUsers(userName, hashedPassword, firstName, lastName, email, adminPrivileges, timeCreated) VALUES (?,?,?,?,?,?,?)", [
+                 userName, password, firstName, lastName, email, adminPrivileges, timeCreated])  # Writes the information to the db
     conn.commit()
     currentWindow.destroy()    
 

@@ -3,16 +3,60 @@ import os
 import time
 import hashlib
 import sqlite3
+import smtplib
+import pyttsx3
 import tkinter as tk
 from tkinter import *
 from tkinter import ttk
 from datetime import datetime
+from dotenv import load_dotenv
 
 conn = sqlite3.connect('database.db', check_same_thread=False)
+
+conn.execute('''CREATE TABLE if not exists appUsers
+  (userName VARCHAR PRIMARY KEY,
+  hashedPassword INTEGER,
+  firstName TEXT,
+  lastName TEXT,
+  email VARCHAR,
+  adminPrivileges INTEGER,
+  timeCreated DATETIME);''')
+conn.commit()
 
 def closeWindow(currentWindow):
     currentWindow.destroy()
 
+def emailUser(email, userName):
+    load_dotenv()
+
+    gmail_user = os.getenv('emailAccount')
+    gmail_password = os.getenv('emailPassword')
+
+    to = [email]
+    subject = 'Account Created'
+    body = """\
+    An account has just been created for you on iSpy!
+    Your username is: """ + userName + """
+    If you do not know the password, please contact your administrator.
+    """
+
+    email_text = """\
+    From: %s
+    To: %s
+    Subject: %s
+
+    %s
+    """ % (gmail_user, ", ".join(to), subject, body)
+
+    try:
+        smtp_server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
+        smtp_server.ehlo()
+        smtp_server.login(gmail_user, gmail_password)
+        smtp_server.sendmail(gmail_user, to, email_text)
+        smtp_server.close()
+
+    except Exception as ex:
+        print ("Something went wrong….",ex)
 
 def popUpWindow(title, message, menuWindow):
     popUp = tk.Toplevel(menuWindow)
@@ -80,13 +124,15 @@ def accountValidation(acUserName, acFirstName, acLastName, acEmail, acPassword, 
     password = password.encode()
     password = hashlib.sha3_512(password).hexdigest()
 
-    conn.execute("INSERT INTO appUsers(userName, hashedPassword, firstName, lastName, email, adminPrivileges, timeCreated, lastLogIn) VALUES (?,?,?,?,?,?,?,?)", (
-                 userName, password, firstName, lastName, email, adminPrivileges, timeCreated, logInTimeForDB))  # Writes the information to the db
+    emailUser(email, userName)
+    
+    conn.execute("INSERT INTO appUsers(userName, hashedPassword, firstName, lastName, email, adminPrivileges, timeCreated, lastLogIn) VALUES (?,?,?,?,?,?,?,?)", [
+                 userName, password, firstName, lastName, email, adminPrivileges, timeCreated, logInTimeForDB])  # Writes the information to the db
     conn.commit()
+    accountCreationWindow.destroy() 
     title = "Alert!"
     message = "User created successfully"
     popUpWindow(title, message, menuWindow)
-    accountCreationWindow.destroy()    
 
 
 def createAccount(menuWindow):
@@ -197,7 +243,7 @@ def viewLogs(menuWindow):
         if entry == 1:
             entry = "Entry"
             userId = event[2]
-            userDetails = conn.execute("SELECT firstName, lastName FROM idCards WHERE id = ?", (userId)).fetchall()
+            userDetails = conn.execute("SELECT firstName, lastName FROM idCards WHERE id = ?", [userId]).fetchall()
             firstName = userDetails[0][0]
             lastName = userDetails[0][1]
         else:
@@ -303,7 +349,7 @@ def login(username, password, window):
 
     passwordToEncode = passwordToEncode.encode()
     password = hashlib.sha3_512(passwordToEncode).hexdigest()
-    cursor = conn.execute("SELECT * FROM appUsers Where userName = ?", (userName)).fetchall()
+    cursor = conn.execute("SELECT * FROM appUsers Where userName = ?", [userName]).fetchall()
 
     if len(cursor) == 0:
         message = 'Username or password incorrect'
@@ -319,7 +365,7 @@ def login(username, password, window):
       lastLogIn = cursor[0][7]
       now = datetime.now()
       logInTimeForDB = now.strftime("%d/%m/%Y")
-      conn.execute("UPDATE appUsers SET lastLogIn = ? WHERE userName = ?", (logInTimeForDB, userName))
+      conn.execute("UPDATE appUsers SET lastLogIn = ? WHERE userName = ?", [logInTimeForDB, userName])
       conn.commit()
       loginTime = now.strftime("%H:%M")
       message = "Logged in successfully"
@@ -327,11 +373,19 @@ def login(username, password, window):
       if adminPrivalges == 1:
           adminPrivalges = True
           window.destroy()
+          # Saying hello to the user
+          engine = pyttsx3.init()
+          engine.say("Hello " + firstName + " " + lastName)
+          engine.runAndWait()
           main(userName, firstName, email, adminPrivalges, loginTime, lastLogIn)
 
       else:
           adminPrivalges = False
           window.destroy()
+          # Saying hello to the user
+          engine = pyttsx3.init()
+          engine.say("Hello " + firstName + " " + lastName)
+          engine.runAndWait()
           main(userName, firstName, email, adminPrivalges, loginTime, lastLogIn)
 
     else:
