@@ -1,2 +1,7 @@
 *.env
 email test.py
+database.db
+dbreset.py
+Frontend/
+Backend/
+Recordings/

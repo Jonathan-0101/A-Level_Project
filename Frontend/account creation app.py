@@ -1,10 +1,13 @@
 import os
 import re
 import ssl
-import base64
+import string
+import random
 import sqlite3
 import smtplib
+import hashlib
 from tkinter import *
+import tkinter as tk
 from datetime import datetime
 from functools import partial
 from dotenv import load_dotenv
@@ -16,25 +19,23 @@ normFont = ("Helvetica", 10)
 smallFont = ("Helvetica", 8)
 
 
-def exitAccountCreationWindow(currentWindow):
+def closeWindow(currentWindow):
     currentWindow.destroy()
 
 
-def closePopUp(currentWindow, popUp):
-    popUp.destroy()
-
-
-def accountcreationError(message, currentWindow):
-    popUp = Tk()
+def popUpWindow(title, message, window):
+    popUp = tk.Toplevel(window)
     popUp.geometry('250x100')
-    popUp.title('Alert!')
+    currentWindow = popUp
+    popUp.title(title)
     label = Label(popUp, text=message, font=normFont)
     label.pack(side="top", fill="x", pady=10)
-    button = Button(popUp, text="Okay", command = lambda: [closePopUp(currentWindow, popUp)])
+    button = Button(popUp, text="Okay", command=lambda:[closeWindow(currentWindow)])
     button.pack()
     popUp.mainloop()
 
-def emailUser(email, userName):
+
+def emailUser(email, userName, password):
     load_dotenv()
 
     gmail_user = os.getenv('emailAccount')
@@ -43,11 +44,12 @@ def emailUser(email, userName):
     userName = 'Jonathan Woolf'
 
     to = [email]
-    subject = 'Account Created'
+    subject = 'iSpy'
     body = """\
     An account has just been created for you on iSpy!
     Your username is: """ + userName + """
-    If you do not know the password, please contact your administrator.
+    Your password is: """ + password + """
+    You must change your password after logging in.
     """
 
     email_text = """\
@@ -66,64 +68,39 @@ def emailUser(email, userName):
         smtp_server.close()
 
     except Exception as ex:
-        print ("Something went wrong….",ex)
+        print("Something went wrong….",ex)
 
-def accountValidation(userName, firstName, lastName, email, password, confirmPassword, adminPrivileges, accountCreationWindow):
-    currentWindow = accountCreationWindow
+def accountValidation(acUserName, acFirstName, acLastName, acEmail, acAdminPrivileges, accountCreationWindow, window):
     # Retreaving the information from the users inputs for validation
-    userName = userName.get()
-    firstName = firstName.get()
-    lastName = lastName.get()
-    email = email.get()
-    password = password.get()
-    confirmPassword = confirmPassword.get()
-    admin = adminPrivileges.get()
+    userName = acUserName.get()
+    firstName = acFirstName.get()
+    lastName = acLastName.get()
+    email = acEmail.get()
+    adminPrivileges = acAdminPrivileges.get()
+    title = "Account Creation Error"
 
     # Regex for email validation
     emailCheck = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
 
     now = datetime.now() # Gets the current date and time
     timeCreated = now.strftime("%d/%m/%Y %H:%M:%S")
+    logInTimeForDB = now.strftime("%d/%m/%Y")
 
-    print(userName)
     # Searches the database for all instances of the given username
-    cursor = conn.execute("SELECT * FROM appUsers Where userName = ?", [userName]).fetchall()
+    cursor = conn.execute(
+        "SELECT * FROM appUsers Where userName = ?", [userName]).fetchall()
 
-    if 0 in (len(userName), len(firstName), len(lastName), len(email), len(password), len(confirmPassword), len(admin)):
+    if 0 in (len(userName), len(firstName), len(lastName), len(email)):
         message = 'Some fields are blank \n Please fill all of them in'
-        accountcreationError(message, currentWindow)
+        popUpWindow(title, message, window)
 
     if len(cursor) == 1:  # Checks that the username is not taken
         message = 'Username is already taken, please try a different one'
-        accountcreationError(message, currentWindow)
+        popUpWindow(title, message, window)
 
     if not re.fullmatch(emailCheck, email):  # Checks against the regex that the email is valid
         message = 'Email not valid, please try again'
-        accountcreationError(message, currentWindow)
-
-    # Checking the password
-    if password != confirmPassword:  # Checks that the passwords match
-        message = 'Passwords do not match please try again'
-        accountcreationError(message, currentWindow)
-
-    if len(password) < 6:  # Checks the length of the password
-        message = 'Password is not strong enough \n Please use a minimum of 6 characters'
-        accountcreationError(message, currentWindow)
-
-    # Checking if the created user should have admin privileges
-
-    adminYes = ['y', 'Y', 'yes', 'YES', 'Yes']
-    adminNo = ['n', 'N', 'no', 'NO', 'No']
-
-    if admin in adminYes:
-        adminPrivileges = 1
-
-    elif admin in adminNo:
-        adminPrivileges = 0
-
-    else:
-        message = 'Admin privileges not in correct form \n Please try again'
-        accountcreationError(message, currentWindow)
+        popUpWindow(title, message, window)
 
     # Making the first letter of the first and last name caplital
     firstName = firstName.capitalize()
@@ -131,60 +108,59 @@ def accountValidation(userName, firstName, lastName, email, password, confirmPas
 
     # Making the characters of the email lowercase
     email = email.lower()
+    
+    # Generating a random password
+    passwordToSend = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(6))
 
     # Encrypting the password
-    password = password.encode("utf-8")
-    password = base64.b64encode(password)
+    password = passwordToSend.encode()
+    password = hashlib.sha3_512(password).hexdigest()
 
-    emailUser(email, userName)
+    emailUser(email, userName, passwordToSend)
     
-    conn.execute("INSERT INTO appUsers(userName, hashedPassword, firstName, lastName, email, adminPrivileges, timeCreated) VALUES (?,?,?,?,?,?,?)", [
-                 userName, password, firstName, lastName, email, adminPrivileges, timeCreated])  # Writes the information to the db
+    conn.execute("INSERT INTO appUsers(userName, hashedPassword, firstName, lastName, email, adminPrivileges, timeCreated, lastLogIn) VALUES (?,?,?,?,?,?,?,?)", [
+                 userName, password, firstName, lastName, email, adminPrivileges, timeCreated, logInTimeForDB])  # Writes the information to the db
     conn.commit()
-    currentWindow.destroy()    
+    accountCreationWindow.destroy() 
+    title = "Alert!"
+    message = "User created successfully"
+    popUpWindow(title, message, window)
 
-
-def createAccount():
-    accountCreationWindow = Tk()
-    accountCreationWindow.geometry('390x410')
+def createAccount(window):
+    accountCreationWindow = tk.Toplevel(window)
+    accountCreationWindow.geometry('390x350')
     accountCreationWindow.title('Create account')
+    currentWindow = accountCreationWindow
 
-    spacer1 = Label(accountCreationWindow, text ="").grid(row=0, column=0)
+    spacer1 = Label(accountCreationWindow, text="").grid(row=0, column=0)
 
-    userName = StringVar()
+    acUserName = StringVar()
     userNameLabel = Label(accountCreationWindow, text="User Name", pady=10, width=22, anchor='w').grid(row=1, column=1)
-    userNameEntry = Entry(accountCreationWindow, textvariable=userName, width=30).grid(row=1, column=2)
+    userNameEntry = Entry(accountCreationWindow, textvariable=acUserName, width=30).grid(row=1, column=2)
 
-    firstName = StringVar()
+    acFirstName = StringVar()
     firstNameLabel = Label(accountCreationWindow, text="First name", pady=10, width=22, anchor='w').grid(row=2, column=1)
-    firstNameEntry = Entry(accountCreationWindow, textvariable=firstName, width=30).grid(row=2, column=2)
+    firstNameEntry = Entry(accountCreationWindow, textvariable=acFirstName, width=30).grid(row=2, column=2)
 
-    lastName = StringVar()
+    acLastName = StringVar()
     lastNameLable = Label(accountCreationWindow, text="Last name", pady=10, width=22, anchor='w').grid(row=3, column=1)
-    lastNameEntry = Entry(accountCreationWindow, textvariable=lastName, width=30).grid(row=3, column=2)
+    lastNameEntry = Entry(accountCreationWindow, textvariable=acLastName, width=30).grid(row=3, column=2)
 
-    email = StringVar()
+    acEmail = StringVar()
     emailLable = Label(accountCreationWindow, text="Email", pady=10, width=22, anchor='w').grid(row=4, column=1)
-    emailEntry = Entry(accountCreationWindow, textvariable=email, width=30).grid(row=4, column=2)
+    emailEntry = Entry(accountCreationWindow, textvariable=acEmail, width=30).grid(row=4, column=2)
 
-    password = StringVar()
-    passwordLabel = Label(accountCreationWindow, text="Password", pady=10, width=22, anchor='w').grid(row=5, column=1)
-    passwordEntry = Entry(accountCreationWindow, textvariable=password, show='*', width=30).grid(row=5, column=2)
+    acAdminPrivileges = IntVar()
+    adminLable = Label(accountCreationWindow, text="Admin privlages", pady=10, width=22, anchor='w').grid(row=5, column=1)
+    Checkbutton(accountCreationWindow, text="                                                       ", variable=acAdminPrivileges).grid(row=5, column=2)
 
-    confirmPassword = StringVar()
-    confirmPasswordLabel = Label(accountCreationWindow, text="Confirm password", pady=10, width=22, anchor='w').grid(row=6, column=1)
-    confirmPasswordEntry = Entry(accountCreationWindow, textvariable=confirmPassword, show='*', width=30).grid(row=6, column=2)
-
-    adminPrivileges = StringVar()
-    adminPrivilegesLable = Label(accountCreationWindow, text ="Admin privalges (yes/no)", pady=10, width=22, anchor='w').grid(row=7, column=1)
-    adminPrivilegesEntry = Entry(accountCreationWindow, textvariable=adminPrivileges, width=30).grid(row=7, column=2)
-
-    spacer2 = Label(accountCreationWindow, text ="").grid(row=8, column=1)
-    validateLogin = partial(accountValidation, userName, firstName, lastName, email, password, confirmPassword, adminPrivileges, accountCreationWindow)
-    loginButton = Button(accountCreationWindow, text="           Create account           ", command=validateLogin).grid(row=9, column=2)
-    spacer3 = Label(accountCreationWindow, text =" ").grid(row=10, column=2)
-    exitButton = Button(accountCreationWindow, text ="             Exit            ", command = lambda: [exitAccountCreationWindow(accountCreationWindow)]).grid(row=11, column=2)
+    spacer2 = Label(accountCreationWindow, text="").grid(row=6, column=1)
+    loginButton = Button(accountCreationWindow, text="           Create account           ", command=lambda:[accountValidation(acUserName, acFirstName, acLastName, acEmail, acAdminPrivileges, accountCreationWindow, window)]).grid(row=7, column=2)
+    spacer3 = Label(accountCreationWindow, text=" ").grid(row=8, column=2)
+    exitButton = Button(accountCreationWindow, text="             Exit            ", command=lambda:[closeWindow(currentWindow)]).grid(row=9, column=2)
     accountCreationWindow.mainloop()
 
 
-createAccount()
+window = tk.Tk()
+createAccount(window)
+window.mainloop()

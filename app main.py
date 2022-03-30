@@ -1,6 +1,8 @@
 import re
 import os
 import time
+import string
+import random
 import hashlib
 import sqlite3
 import smtplib
@@ -20,46 +22,17 @@ conn.execute('''CREATE TABLE if not exists appUsers
   lastName TEXT,
   email VARCHAR,
   adminPrivileges INTEGER,
-  timeCreated DATETIME);''')
+  timeCreated DATETIME,
+  lastLogin DATETIME);''')
 conn.commit()
+
 
 def closeWindow(currentWindow):
     currentWindow.destroy()
 
-def emailUser(email, userName):
-    load_dotenv()
 
-    gmail_user = os.getenv('emailAccount')
-    gmail_password = os.getenv('emailPassword')
-
-    to = [email]
-    subject = 'Account Created'
-    body = """\
-    An account has just been created for you on iSpy!
-    Your username is: """ + userName + """
-    If you do not know the password, please contact your administrator.
-    """
-
-    email_text = """\
-    From: %s
-    To: %s
-    Subject: %s
-
-    %s
-    """ % (gmail_user, ", ".join(to), subject, body)
-
-    try:
-        smtp_server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
-        smtp_server.ehlo()
-        smtp_server.login(gmail_user, gmail_password)
-        smtp_server.sendmail(gmail_user, to, email_text)
-        smtp_server.close()
-
-    except Exception as ex:
-        print ("Something went wrong….",ex)
-
-def popUpWindow(title, message, menuWindow):
-    popUp = tk.Toplevel(menuWindow)
+def popUpWindow(title, message, window):
+    popUp = tk.Toplevel(window)
     popUp.geometry('250x100')
     currentWindow = popUp
     popUp.title(title)
@@ -70,14 +43,45 @@ def popUpWindow(title, message, menuWindow):
     popUp.mainloop()
 
 
-def accountValidation(acUserName, acFirstName, acLastName, acEmail, acPassword, acConfirmPassword, acAdminPrivileges, accountCreationWindow, menuWindow):
+def emailUser(email, userName, passwordToSend):
+    load_dotenv()
+
+    gmail_user = os.getenv('emailAccount')
+    gmail_password = os.getenv('emailPassword')
+
+    to = [email]
+    subject = 'Information about your account'
+    body = """\
+    A change has happened with your account on iSpy!
+    Your username is: """ + userName + """
+    Your password is: """ + passwordToSend + """
+    You will have to change your password when you first login.
+    """
+    email_text = """\
+From: %s
+To: %s
+Subject: %s
+
+%s
+    """ % (gmail_user, ", ".join(to), subject, body)                                               
+
+    try:
+        smtp_server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
+        smtp_server.ehlo()
+        smtp_server.login(gmail_user, gmail_password)
+        smtp_server.sendmail(gmail_user, to, email_text)
+        smtp_server.close()
+
+    except Exception as ex:
+        print("Something went wrong….",ex)
+
+
+def accountValidation(acUserName, acFirstName, acLastName, acEmail, acAdminPrivileges, accountCreationWindow, window):
     # Retreaving the information from the users inputs for validation
     userName = acUserName.get()
     firstName = acFirstName.get()
     lastName = acLastName.get()
     email = acEmail.get()
-    password = acPassword.get()
-    confirmPassword = acConfirmPassword.get()
     adminPrivileges = acAdminPrivileges.get()
     title = "Account Creation Error"
 
@@ -86,32 +90,23 @@ def accountValidation(acUserName, acFirstName, acLastName, acEmail, acPassword, 
 
     now = datetime.now() # Gets the current date and time
     timeCreated = now.strftime("%d/%m/%Y %H:%M:%S")
-    logInTimeForDB = now.strftime("%d/%m/%Y")
+    logInTimeForDB = now.strftime("%d/%m/%Y %H:%M:%S")
 
     # Searches the database for all instances of the given username
     cursor = conn.execute(
         "SELECT * FROM appUsers Where userName = ?", [userName]).fetchall()
 
-    if 0 in (len(userName), len(firstName), len(lastName), len(email), len(password), len(confirmPassword)):
+    if 0 in (len(userName), len(firstName), len(lastName), len(email)):
         message = 'Some fields are blank \n Please fill all of them in'
-        popUpWindow(title, message, menuWindow)
+        popUpWindow(title, message, window)
 
     if len(cursor) == 1:  # Checks that the username is not taken
         message = 'Username is already taken, please try a different one'
-        popUpWindow(title, message, menuWindow)
+        popUpWindow(title, message, window)
 
     if not re.fullmatch(emailCheck, email):  # Checks against the regex that the email is valid
         message = 'Email not valid, please try again'
-        popUpWindow(title, message, menuWindow)
-
-    # Checking the password
-    if password != confirmPassword:  # Checks that the passwords match
-        message = 'Passwords do not match please try again'
-        popUpWindow(title, message, menuWindow)
-
-    if len(password) < 6:  # Checks the length of the password
-        message = 'Password is not strong enough \n Please use a minimum of 6 characters'
-        popUpWindow(title, message, menuWindow)
+        popUpWindow(title, message, window)
 
     # Making the first letter of the first and last name caplital
     firstName = firstName.capitalize()
@@ -119,12 +114,15 @@ def accountValidation(acUserName, acFirstName, acLastName, acEmail, acPassword, 
 
     # Making the characters of the email lowercase
     email = email.lower()
+    
+    # Generating a random password
+    passwordToSend = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(6))
 
     # Encrypting the password
-    password = password.encode()
+    password = passwordToSend.encode()
     password = hashlib.sha3_512(password).hexdigest()
 
-    emailUser(email, userName)
+    emailUser(email, userName, passwordToSend)
     
     conn.execute("INSERT INTO appUsers(userName, hashedPassword, firstName, lastName, email, adminPrivileges, timeCreated, lastLogIn) VALUES (?,?,?,?,?,?,?,?)", [
                  userName, password, firstName, lastName, email, adminPrivileges, timeCreated, logInTimeForDB])  # Writes the information to the db
@@ -132,12 +130,12 @@ def accountValidation(acUserName, acFirstName, acLastName, acEmail, acPassword, 
     accountCreationWindow.destroy() 
     title = "Alert!"
     message = "User created successfully"
-    popUpWindow(title, message, menuWindow)
+    popUpWindow(title, message, window)
 
 
-def createAccount(menuWindow):
-    accountCreationWindow = tk.Toplevel(menuWindow)
-    accountCreationWindow.geometry('390x410')
+def createAccount(window):
+    accountCreationWindow = tk.Toplevel(window)
+    accountCreationWindow.geometry('390x350')
     accountCreationWindow.title('Create account')
     currentWindow = accountCreationWindow
 
@@ -159,22 +157,14 @@ def createAccount(menuWindow):
     emailLable = Label(accountCreationWindow, text="Email", pady=10, width=22, anchor='w').grid(row=4, column=1)
     emailEntry = Entry(accountCreationWindow, textvariable=acEmail, width=30).grid(row=4, column=2)
 
-    acPassword = StringVar()
-    passwordLabel = Label(accountCreationWindow, text="Password", pady=10, width=22, anchor='w').grid(row=5, column=1)
-    passwordEntry = Entry(accountCreationWindow, textvariable=acPassword, show='*', width=30).grid(row=5, column=2)
-
-    acConfirmPassword = StringVar()
-    confirmPasswordLabel = Label(accountCreationWindow, text="Confirm password", pady=10, width=22, anchor='w').grid(row=6, column=1)
-    confirmPasswordEntry = Entry(accountCreationWindow, textvariable=acConfirmPassword, show='*', width=30).grid(row=6, column=2)
-
     acAdminPrivileges = IntVar()
-    adminLable = Label(accountCreationWindow, text="Admin privlages", pady=10, width=22, anchor='w').grid(row=7, column=1)
-    Checkbutton(accountCreationWindow, text="                                                       ", variable=acAdminPrivileges).grid(row=7, column=2)
+    adminLable = Label(accountCreationWindow, text="Admin priveleges", pady=10, width=22, anchor='w').grid(row=5, column=1)
+    Checkbutton(accountCreationWindow, text="                                                       ", variable=acAdminPrivileges).grid(row=5, column=2)
 
-    spacer2 = Label(accountCreationWindow, text="").grid(row=8, column=1)
-    loginButton = Button(accountCreationWindow, text="           Create account           ", command=lambda:[accountValidation(acUserName, acFirstName, acLastName, acEmail, acPassword, acConfirmPassword, acAdminPrivileges, accountCreationWindow, menuWindow)]).grid(row=9, column=2)
-    spacer3 = Label(accountCreationWindow, text=" ").grid(row=10, column=2)
-    exitButton = Button(accountCreationWindow, text="             Exit            ", command=lambda:[closeWindow(currentWindow)]).grid(row=11, column=2)
+    spacer2 = Label(accountCreationWindow, text="").grid(row=6, column=1)
+    loginButton = Button(accountCreationWindow, text="           Create account           ", command=lambda:[accountValidation(acUserName, acFirstName, acLastName, acEmail, acAdminPrivileges, accountCreationWindow, window)]).grid(row=7, column=2)
+    spacer3 = Label(accountCreationWindow, text=" ").grid(row=8, column=2)
+    exitButton = Button(accountCreationWindow, text="             Exit            ", command=lambda:[closeWindow(currentWindow)]).grid(row=9, column=2)
     accountCreationWindow.mainloop()
 
 
@@ -196,9 +186,9 @@ def showSelected(tree, entryLogList):
     time.sleep(2)
 
 
-def viewLogs(menuWindow):
+def viewLogs(window):
     #Creating the windiow for the event display
-    viewWindow = tk.Toplevel(menuWindow)
+    viewWindow = tk.Toplevel(window)
     viewWindow.geometry("1020x690")
 
     currentWindow = viewWindow
@@ -270,19 +260,19 @@ def viewLogs(menuWindow):
     viewWindow.mainloop()
 
 
-def unlock(lockWindow, menuWindow):
+def unlock(lockWindow, window):
     conn.execute("Update doorStatus set lockStatus = 1")
     conn.commit()
     title = "Alert!"
     message = "Door unlocked for 30 seconds"
-    popUpWindow(title, message, menuWindow)
+    popUpWindow(title, message, window)
     time.sleep(10)
     lockWindow.destroy()
 
 
-def unlockWindow(menuWindow):
+def unlockWindow(window):
     #Creating lock window
-    lockWindow = tk.Toplevel(menuWindow)
+    lockWindow = tk.Toplevel(window)
     currentWindow = lockWindow
     #Sizeing the window
     lockWindow.geometry('150x160')
@@ -290,65 +280,118 @@ def unlockWindow(menuWindow):
     spacer1 = Label(lockWindow, text="", font=("Arial Bold", 50))
     spacer2 = Label(lockWindow, text="             ").grid(column=0, row=0)
     #Creating unlock button
-    unlockButton = Button(lockWindow, text="\n  Unlock  \n", command=lambda:[unlock(lockWindow, menuWindow)]).grid(row=1, column=1)
+    unlockButton = Button(lockWindow, text="\n  Unlock  \n", command=lambda:[unlock(lockWindow, window)]).grid(row=1, column=1)
     #Creating exit button
     exitButton = Button(lockWindow, text="\n     Exit     \n", command=lambda:[closeWindow(currentWindow)]).grid(row=3, column=1)
     spacer4 = Label(lockWindow, text="\n").grid(row=4, column=1)
     lockWindow.mainloop()
 
 
-def manageUsers(menuWindow):
+def manageUsers(window):
     print("Manage users")
 
 
 def main(userName, firstName, email, adminPrivalges, loginTime, lastLogIn):
     # Creating the user summary
     userSummary = ('Username: ' + userName + '\nFirst name: ' + firstName + '\nEmail: ' + email + '\nLog in time: ' + loginTime + '\nLast Log In: ' + lastLogIn)
-    menuWindow = tk.Tk() # Creating window
-    menuWindow.geometry('360x500')
-    menuWindow.title('Main menu')
+    window = tk.Tk() # Creating window
+    window.geometry('360x500')
+    window.title('Main menu')
     #View logs button
-    viewLogButton = Button(menuWindow, text ="           View Logs           ", command=lambda:[viewLogs(menuWindow)], pady=10, padx=10)
+    viewLogButton = Button(window, text ="           View Logs           ", command=lambda:[viewLogs(window)], pady=10, padx=10)
     #Unlock door button
-    unlockDoorButton = Button(menuWindow, text ="         Unlock door         ", command=lambda:[unlockWindow(menuWindow)], pady=10, padx=10)
+    unlockDoorButton = Button(window, text ="         Unlock door         ", command=lambda:[unlockWindow(window)], pady=10, padx=10)
+    #Change password button
+    changePasswordButton = Button(window, text ="    Change password    ", command=lambda:[changePassword(window, userName)], pady=10, padx=10)
     #Exit button
-    exitButton = Button(menuWindow, text ="              Log off             ", command=exit, pady=10, padx=10)
+    exitButton = Button(window, text ="              Log off             ", command=exit, pady=10, padx=10)
     #User summary print out
-    userSumarryDisplay = Label(menuWindow, text=userSummary,  justify="left", pady=10, padx=10)
+    userSumarryDisplay = Label(window, text=userSummary,  justify="left", pady=10, padx=10)
     userSumarryDisplay.place(relx=1.0, rely=0.0, anchor='ne')
 
 
     if adminPrivalges == True:  # Function that adds in the extra features for admin users
         #Create account button
-        createAccountButton = Button(menuWindow, text="      Create Account      ", command=lambda:[createAccount(menuWindow)], pady=10, padx=10)
+        createAccountButton = Button(window, text="      Create Account      ", command=lambda:[createAccount(window)], pady=10, padx=10)
         #Manage users button
-        manageUsersButton = Button(menuWindow, text="       Manage Users       ", command=lambda:[manageUsers(menuWindow)], pady=10, padx=10)
+        manageUsersButton = Button(window, text="       Manage Users       ", command=lambda:[manageUsers(window)], pady=10, padx=10)
         #Placing the buttons
-        createAccountButton.place(relx=0.5, rely=0.5, anchor='center')
-        manageUsersButton.place(relx=0.5, rely=0.6, anchor='center')
         viewLogButton.place(relx=0.5, rely=0.3, anchor='center')
-        exitButton.place(relx=0.5, rely=0.7, anchor='center')
         unlockDoorButton.place(relx=0.5, rely=0.4, anchor='center')
+        createAccountButton.place(relx=0.5, rely=0.5, anchor='center')
+        changePasswordButton.place(relx=0.5, rely=0.6, anchor='center')
+        manageUsersButton.place(relx=0.5, rely=0.7, anchor='center')
+        exitButton.place(relx=0.5, rely=0.8, anchor='center')
 
 
     else: # Puts the buttons in their location if the user is not an admin
         viewLogButton.place(relx=0.5, rely=0.4, anchor='center')
         unlockDoorButton.place(relx=0.5, rely=0.5, anchor='center')
-        exitButton.place(relx=0.5, rely=0.6, anchor='center')
+        changePasswordButton.place(relx=0.5, rely=0.6, anchor='center')
+        exitButton.place(relx=0.5, rely=0.7, anchor='center')
 
-    menuWindow.mainloop()
+    window.mainloop()
+
+
+def updatePassword(window, updateWindow, password, confirmPassword, userName):
+    password = password.get()
+    confirmPassword = confirmPassword.get()
+    if 0 in [len(password), len(confirmPassword)]:
+        message = "Please fill the inputs"
+        title = "Alert!"
+        popUpWindow(title, message, window)        
+        
+    elif password != confirmPassword:
+        message = "Passwords do not match"
+        title = "Alert!"
+        popUpWindow(title, message, window)
+        
+    elif len(password) < 6:
+        message = "Password must be at least 6 characters"
+        title = "Alert!"
+        popUpWindow(title, message, window)
+        
+    else:
+        password = password.encode()
+        password = hashlib.sha3_512(password).hexdigest()
+        conn.execute("UPDATE appUsers set hashedPassword = ? WHERE userName = ?", [password, userName])
+        conn.commit()
+        now = datetime.now()
+        logInTimeForDB = now.strftime("%d/%m/%Y")
+        conn.execute("UPDATE appUsers SET lastLogIn = ? WHERE userName = ?", [logInTimeForDB, userName])
+        conn.commit()
+        message = "Password updated successfully"
+        title = "Alert!"
+        updateWindow.destroy()
+        popUpWindow(title, message, window)
+
+
+def changePassword(window, userName):
+    updateWindow = Toplevel(window)
+    updateWindow.geometry('347x195')
+    updateWindow.title('Update password')
+    spacer1 = Label(updateWindow, text="").grid(row=0, column=0)
+    password = StringVar()
+    passwordLable = Label(updateWindow, text="New password", pady=10, padx=10, width=15, anchor='w').grid(row=1, column=1 )
+    passwordEntry = Entry(updateWindow, textvariable=password, show='*', width=30).grid(row=1, column=2) # Username entry
+    confirmPassword = StringVar()
+    confirmPasswordLable = Label(updateWindow, text="Confirm password", pady=10, padx=10, width=15, anchor='w').grid(row=2, column=1)
+    confirmPasswordLable = Entry(updateWindow, textvariable=confirmPassword, show='*', width=30).grid(row=2, column=2) # Password entry
+    loginButton = Button(updateWindow, text="          Update          ", command=lambda:[updatePassword(window, updateWindow, password, confirmPassword, userName)]).grid(row=3, column=2)
+    spacer2 = Label(updateWindow, text=" ").grid(row=4, column=2)
+    updateWindow.mainloop()
 
 
 def login(username, password, window):
     userName = username.get()
     passwordToEncode = password.get()
+    passwordToHash = passwordToEncode.encode()
+    password = hashlib.sha3_512(passwordToHash).hexdigest()
 
     if 0 in (len(userName), len(passwordToEncode)):
         message = 'Please fill in the inputs'
         loginError(message, window)
-
-    passwordToEncode = passwordToEncode.encode()
-    password = hashlib.sha3_512(passwordToEncode).hexdigest()
+    
     cursor = conn.execute("SELECT * FROM appUsers Where userName = ?", [userName]).fetchall()
 
     if len(cursor) == 0:
@@ -362,35 +405,72 @@ def login(username, password, window):
       lastName = cursor[0][3]  
       email = cursor[0][4]
       adminPrivalges = cursor[0][5]
+      timeCreated = cursor[0][6]
       lastLogIn = cursor[0][7]
-      now = datetime.now()
-      logInTimeForDB = now.strftime("%d/%m/%Y")
-      conn.execute("UPDATE appUsers SET lastLogIn = ? WHERE userName = ?", [logInTimeForDB, userName])
-      conn.commit()
-      loginTime = now.strftime("%H:%M")
-      message = "Logged in successfully"
     
-      if adminPrivalges == 1:
-          adminPrivalges = True
-          window.destroy()
-          # Saying hello to the user
-          engine = pyttsx3.init()
-          engine.say("Hello " + firstName + " " + lastName)
-          engine.runAndWait()
-          main(userName, firstName, email, adminPrivalges, loginTime, lastLogIn)
-
+      if timeCreated == lastLogIn:
+          print("User has to change password")
+          changePassword(window, userName)
+          
       else:
-          adminPrivalges = False
-          window.destroy()
-          # Saying hello to the user
-          engine = pyttsx3.init()
-          engine.say("Hello " + firstName + " " + lastName)
-          engine.runAndWait()
-          main(userName, firstName, email, adminPrivalges, loginTime, lastLogIn)
+         now = datetime.now()
+         logInTimeForDB = now.strftime("%d/%m/%Y")
+         conn.execute("UPDATE appUsers SET lastLogIn = ? WHERE userName = ?", [logInTimeForDB, userName])
+         conn.commit()
+         loginTime = now.strftime("%H:%M")
+         message = "Logged in successfully"
+         
+         if adminPrivalges == 1:
+             adminPrivalges = True
+             window.destroy()
+             # Saying hello to the user
+             engine = pyttsx3.init()
+             engine.say("Hello " + firstName)
+             engine.runAndWait()
+             main(userName, firstName, email, adminPrivalges, loginTime, lastLogIn)
+     
+         else:
+             adminPrivalges = False
+             window.destroy()
+             # Saying hello to the user
+             engine = pyttsx3.init()
+             engine.say("Hello " + firstName)
+             engine.runAndWait()
+             main(userName, firstName, email, adminPrivalges, loginTime, lastLogIn)
 
     else:
         message = 'Username or password incorrect'
         loginError(message, window)
+
+
+def resetPassword(userName, window):
+    userName = userName.get()
+    cursor = conn.execute("SELECT * FROM appUsers where userName = ?", [userName]).fetchall()
+    if len(cursor) == 0:
+        message = "User not found"
+        loginError(message, window)
+    else:
+        passwordToSend = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(6))
+        # Encrypting the password
+        password = passwordToSend.encode()
+        password = hashlib.sha3_512(password).hexdigest()
+        print(password)
+        email = cursor[0][4]
+        timeToChange = cursor[0][6]
+        conn.execute("UPDATE appUsers set hashedPassword = ? WHERE userName = ?", [password, userName])
+        conn.commit()
+        conn.execute("UPDATE appUsers set lastLogIn = ? WHERE userName = ?", [timeToChange, userName])
+        conn.commit()
+        print("Done")
+        emailUser(email, userName, passwordToSend)        
+        
+
+def forgotPassword(window):
+    forgotPasswordWindow = Toplevel(window)
+    forgotPasswordWindow.geometry('340x100')
+    usernameLabel = Label(forgotPasswordWindow, text="User Name", pady=10, padx=10, width=10, anchor='w').grid(row=1, column=1 )
+    usernameEntry = Entry(forgotPasswordWindow, textvariable=username,  width=30).grid(row=1, column=2) # Username entry
+    emailButton = Button(forgotPasswordWindow, text="     Send recovery password      ", command=lambda:[resetPassword(username, window)]).grid(row=2, column=2)
 
 
 def loginError(message, window):
@@ -409,7 +489,7 @@ normfont=("Helvetica", 10)
 smallfontd=("Helvetica", 8)
 
 window = tk.Tk() # Creating window for login system
-window.geometry('347x195')
+window.geometry('347x275')
 window.title('Login') # Setting the title for window
 spacer1 = Label(window, text="").grid(row=0, column=0)
 username = StringVar()
@@ -419,9 +499,13 @@ password = StringVar()
 passwordLabel = Label(window, text="Password", pady=10, padx=10, width=10, anchor='w').grid(row=2, column=1)
 passwordEntry = Entry(window, textvariable=password, show='*', width=30).grid(row=2, column=2) # Password entry
 # Login button
-loginButton = Button(window, text="           Login           ", command=lambda:[login(username, password, window)]).grid(row=3, column=2)
+loginButton = Button(window, text="              Login              ", padx=5, pady=5, command=lambda:[login(username, password, window)]).grid(row=3, column=2)
 spacer2 = Label(window, text=" ").grid(row=4, column=2)
+# Forgot password button
+forgotPasswordButton = Button(window, text="    Forgot password    ", padx=5, pady=5, command=lambda:[forgotPassword(window)]).grid(row=5, column=2)
+spacer3 = Label(window, text=" ").grid(row=6, column=2)
 # Exit button
-exitButton = Button(window, text="             Exit            ", command=exit).grid(row=5, column=2)
-spacer3 = Label(window, text="").grid(row=3, column=0)
+exitButton = Button(window, text="                Exit               ", padx=5, pady=5, command=exit).grid(row=7, column=2)
+spacer3 = Label(window, text=" ").grid(row=8, column=2)
 window.mainloop()
+
