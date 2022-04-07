@@ -12,13 +12,9 @@ dbIp = os.getenv("dbIp")
 dbUserName = os.getenv('dbUserName')
 dbPassword = os.getenv('dbPassword')
 
-cur = mariadb.connect(host=dbIp,
-                        database='iSpy',
-                        user=dbUserName,
-                        password=dbPassword)
+cur = mariadb.connect(host=dbIp, database='iSpy', user=dbUserName, password=dbPassword)
 
 conn = cur.cursor()
-
 
 # Sets up the GPIO pins and defines the reader
 GPIO.setwarnings(False)
