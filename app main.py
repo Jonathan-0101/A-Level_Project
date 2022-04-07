@@ -484,6 +484,7 @@ def loginError(message, window):
     button.pack()
     popUp.mainloop()
 
+
 largefont=("Verdana", 12)
 normfont=("Helvetica", 10)
 smallfontd=("Helvetica", 8)
@@ -508,4 +509,3 @@ spacer3 = Label(window, text=" ").grid(row=6, column=2)
 exitButton = Button(window, text="                Exit               ", padx=5, pady=5, command=exit).grid(row=7, column=2)
 spacer3 = Label(window, text=" ").grid(row=8, column=2)
 window.mainloop()
-
