@@ -117,8 +117,9 @@ def accountValidation(acUserName, acFirstName, acLastName, acEmail, acAdminPrivi
 
     emailUser(email, userName, passwordToSend)
     
-    conn.execute("INSERT INTO appUsers(userName, hashedPassword, firstName, lastName, email, adminPrivileges, timeCreated, lastLogIn) VALUES (?,?,?,?,?,?,?,?)", (
-                 userName, password, firstName, lastName, email, adminPrivileges, timeCreated, logInTimeForDB,))  # Writes the information to the db
+    conn.execute("INSERT INTO appUsers(userName, hashedPassword, firstName, lastName, email, adminPrivlages, timeCreated, lastLogIn) VALUES (?,?,?,?,?,?,?,?)", (
+                 userName, password, firstName, lastName, email, adminPrivileges, timeCreated, logInTimeForDB))  # Writes the information to the db
+    cur.commit()
     accountCreationWindow.destroy() 
     title = "Alert!"
     message = "User created successfully"
@@ -256,6 +257,7 @@ def viewLogs(window):
 
 def unlock(lockWindow, window):
     conn.execute("Update doorStatus set lockStatus = 1")
+    cur.commit()
     title = "Alert!"
     message = "Door unlocked for 30 seconds"
     popUpWindow(title, message, window)
@@ -348,9 +350,11 @@ def updatePassword(window, updateWindow, password, confirmPassword, userName):
         password = password.encode()
         password = hashlib.sha3_512(password).hexdigest()
         conn.execute("UPDATE appUsers set hashedPassword = ? WHERE userName = ?", (password, userName,))
+        cur.commit()
         now = datetime.now()
         logInTimeForDB = now
         conn.execute("UPDATE appUsers SET lastLogIn = ? WHERE userName = ?", (logInTimeForDB, userName,))
+        cur.commit()
         message = "Password updated successfully"
         title = "Alert!"
         updateWindow.destroy()
@@ -408,6 +412,7 @@ def login(username, password, window):
          now = datetime.now()
          logInTimeForDB = now
          conn.execute("UPDATE appUsers SET lastLogIn = ? WHERE userName = ?", (logInTimeForDB, userName,))
+         cur.commit()
          loginTime = now.strftime("%H:%M")
          message = "Logged in successfully"
          
@@ -442,7 +447,9 @@ def resetPassword(userName, window):
         email = cursor[0][4]
         timeToChange = cursor[0][6]
         conn.execute("UPDATE appUsers set hashedPassword = ? WHERE userName = ?", (password, userName,))
+        cur.commit()
         conn.execute("UPDATE appUsers set lastLogIn = ? WHERE userName = ?", (timeToChange, userName,))
+        cur.commit()
         print("Done")
         emailUser(email, userName, passwordToSend)        
         

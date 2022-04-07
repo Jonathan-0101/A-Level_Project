@@ -36,9 +36,9 @@ def writeCard():    # Function for writing the card and db
     print("Written")
     cardId, text = reader.read() # Reading the card
     print()
-    conn.execute(
-        "INSERT INTO idCards(cardId, cardName, firstName, lastName, active, timeCreated) VALUES (?,?,?,?,?,?)",
-        (cardId, text, firstName, lastName, 1, timeCreated,)) # Writes the information to the db
+    conn.execute("INSERT INTO idCards(cardId, cardName, firstName, lastName, active, timeCreated) VALUES (?,?,?,?,?,?)",
+                 (cardId, text, firstName, lastName, 1, timeCreated,))
+    cur.commit()
 
 
 def readCard(): # Function for reading the card
