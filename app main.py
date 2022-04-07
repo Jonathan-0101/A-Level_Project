@@ -4,28 +4,22 @@ import time
 import string
 import random
 import hashlib
-import sqlite3
+import mariadb
 import smtplib
-import pyttsx3
 import tkinter as tk
 from tkinter import *
 from tkinter import ttk
 from datetime import datetime
 from dotenv import load_dotenv
 
-conn = sqlite3.connect('database.db', check_same_thread=False)
+load_dotenv()
+dbIp = os.getenv("dbIp")
+dbUserName = os.getenv('dbUserName')
+dbPassword = os.getenv('dbPassword')
 
-conn.execute('''CREATE TABLE if not exists appUsers
-  (userName VARCHAR PRIMARY KEY,
-  hashedPassword INTEGER,
-  firstName TEXT,
-  lastName TEXT,
-  email VARCHAR,
-  adminPrivileges INTEGER,
-  timeCreated DATETIME,
-  lastLogin DATETIME);''')
-conn.commit()
+cur = mariadb.connect(host=dbIp, database='iSpy', user=dbUserName, password=dbPassword)
 
+conn = cur.cursor()
 
 def closeWindow(currentWindow):
     currentWindow.destroy()
@@ -45,7 +39,6 @@ def popUpWindow(title, message, window):
 
 def emailUser(email, userName, passwordToSend):
     load_dotenv()
-
     gmail_user = os.getenv('emailAccount')
     gmail_password = os.getenv('emailPassword')
 
@@ -89,12 +82,12 @@ def accountValidation(acUserName, acFirstName, acLastName, acEmail, acAdminPrivi
     emailCheck = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
 
     now = datetime.now() # Gets the current date and time
-    timeCreated = now.strftime("%d/%m/%Y %H:%M:%S")
-    logInTimeForDB = now.strftime("%d/%m/%Y %H:%M:%S")
+    timeCreated = now
+    logInTimeForDB = now
 
     # Searches the database for all instances of the given username
-    cursor = conn.execute(
-        "SELECT * FROM appUsers Where userName = ?", [userName]).fetchall()
+    cursor = conn.execute("SELECT * FROM appUsers Where userName = ?", (userName,))
+    cursor = conn.fetchall()
 
     if 0 in (len(userName), len(firstName), len(lastName), len(email)):
         message = 'Some fields are blank \n Please fill all of them in'
@@ -124,9 +117,8 @@ def accountValidation(acUserName, acFirstName, acLastName, acEmail, acAdminPrivi
 
     emailUser(email, userName, passwordToSend)
     
-    conn.execute("INSERT INTO appUsers(userName, hashedPassword, firstName, lastName, email, adminPrivileges, timeCreated, lastLogIn) VALUES (?,?,?,?,?,?,?,?)", [
-                 userName, password, firstName, lastName, email, adminPrivileges, timeCreated, logInTimeForDB])  # Writes the information to the db
-    conn.commit()
+    conn.execute("INSERT INTO appUsers(userName, hashedPassword, firstName, lastName, email, adminPrivileges, timeCreated, lastLogIn) VALUES (?,?,?,?,?,?,?,?)", (
+                 userName, password, firstName, lastName, email, adminPrivileges, timeCreated, logInTimeForDB,))  # Writes the information to the db
     accountCreationWindow.destroy() 
     title = "Alert!"
     message = "User created successfully"
@@ -221,7 +213,8 @@ def viewLogs(window):
     tree.heading("5", text="Date Time")
 
     #Retriving information from the database
-    entryLog = conn.execute("SELECT * FROM entryLog").fetchall()
+    entryLog = conn.execute("SELECT * FROM entryLog")
+    entryLog = conn.fetchall()
     entryLog.reverse()
     entryLogList = []
 
@@ -233,7 +226,8 @@ def viewLogs(window):
         if entry == 1:
             entry = "Entry"
             userId = event[2]
-            userDetails = conn.execute("SELECT firstName, lastName FROM idCards WHERE id = ?", [userId]).fetchall()
+            userDetails = conn.execute("SELECT firstName, lastName FROM idCards WHERE id = ?", (userId,))
+            userDetails = conn.fetchall()
             firstName = userDetails[0][0]
             lastName = userDetails[0][1]
         else:
@@ -262,7 +256,6 @@ def viewLogs(window):
 
 def unlock(lockWindow, window):
     conn.execute("Update doorStatus set lockStatus = 1")
-    conn.commit()
     title = "Alert!"
     message = "Door unlocked for 30 seconds"
     popUpWindow(title, message, window)
@@ -354,12 +347,10 @@ def updatePassword(window, updateWindow, password, confirmPassword, userName):
     else:
         password = password.encode()
         password = hashlib.sha3_512(password).hexdigest()
-        conn.execute("UPDATE appUsers set hashedPassword = ? WHERE userName = ?", [password, userName])
-        conn.commit()
+        conn.execute("UPDATE appUsers set hashedPassword = ? WHERE userName = ?", (password, userName,))
         now = datetime.now()
-        logInTimeForDB = now.strftime("%d/%m/%Y")
-        conn.execute("UPDATE appUsers SET lastLogIn = ? WHERE userName = ?", [logInTimeForDB, userName])
-        conn.commit()
+        logInTimeForDB = now
+        conn.execute("UPDATE appUsers SET lastLogIn = ? WHERE userName = ?", (logInTimeForDB, userName,))
         message = "Password updated successfully"
         title = "Alert!"
         updateWindow.destroy()
@@ -392,7 +383,8 @@ def login(username, password, window):
         message = 'Please fill in the inputs'
         loginError(message, window)
     
-    cursor = conn.execute("SELECT * FROM appUsers Where userName = ?", [userName]).fetchall()
+    cursor = conn.execute("SELECT * FROM appUsers Where userName = ?", (userName,))
+    cursor = conn.fetchall()
 
     if len(cursor) == 0:
         message = 'Username or password incorrect'
@@ -402,11 +394,11 @@ def login(username, password, window):
 
     if password == passwordToCheck:
       firstName = cursor[0][2]
-      lastName = cursor[0][3]  
       email = cursor[0][4]
       adminPrivalges = cursor[0][5]
       timeCreated = cursor[0][6]
       lastLogIn = cursor[0][7]
+      lastLogIn = lastLogIn.strftime("%d/%m/%y")
     
       if timeCreated == lastLogIn:
           print("User has to change password")
@@ -414,28 +406,19 @@ def login(username, password, window):
           
       else:
          now = datetime.now()
-         logInTimeForDB = now.strftime("%d/%m/%Y")
-         conn.execute("UPDATE appUsers SET lastLogIn = ? WHERE userName = ?", [logInTimeForDB, userName])
-         conn.commit()
+         logInTimeForDB = now
+         conn.execute("UPDATE appUsers SET lastLogIn = ? WHERE userName = ?", (logInTimeForDB, userName,))
          loginTime = now.strftime("%H:%M")
          message = "Logged in successfully"
          
          if adminPrivalges == 1:
              adminPrivalges = True
              window.destroy()
-             # Saying hello to the user
-             engine = pyttsx3.init()
-             engine.say("Hello " + firstName)
-             engine.runAndWait()
              main(userName, firstName, email, adminPrivalges, loginTime, lastLogIn)
      
          else:
              adminPrivalges = False
              window.destroy()
-             # Saying hello to the user
-             engine = pyttsx3.init()
-             engine.say("Hello " + firstName)
-             engine.runAndWait()
              main(userName, firstName, email, adminPrivalges, loginTime, lastLogIn)
 
     else:
@@ -445,7 +428,8 @@ def login(username, password, window):
 
 def resetPassword(userName, window):
     userName = userName.get()
-    cursor = conn.execute("SELECT * FROM appUsers where userName = ?", [userName]).fetchall()
+    cursor = conn.execute("SELECT * FROM appUsers where userName = ?", (userName,))
+    cursor = conn.fetchall()
     if len(cursor) == 0:
         message = "User not found"
         loginError(message, window)
@@ -457,10 +441,8 @@ def resetPassword(userName, window):
         print(password)
         email = cursor[0][4]
         timeToChange = cursor[0][6]
-        conn.execute("UPDATE appUsers set hashedPassword = ? WHERE userName = ?", [password, userName])
-        conn.commit()
-        conn.execute("UPDATE appUsers set lastLogIn = ? WHERE userName = ?", [timeToChange, userName])
-        conn.commit()
+        conn.execute("UPDATE appUsers set hashedPassword = ? WHERE userName = ?", (password, userName,))
+        conn.execute("UPDATE appUsers set lastLogIn = ? WHERE userName = ?", (timeToChange, userName,))
         print("Done")
         emailUser(email, userName, passwordToSend)        
         
