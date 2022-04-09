@@ -324,7 +324,6 @@ def main(userName, firstName, email, adminPrivalges, loginTime, lastLogIn):
         unlockDoorButton.place(relx=0.5, rely=0.5, anchor='center')
         changePasswordButton.place(relx=0.5, rely=0.6, anchor='center')
         exitButton.place(relx=0.5, rely=0.7, anchor='center')
-
     window.mainloop()
 
 
