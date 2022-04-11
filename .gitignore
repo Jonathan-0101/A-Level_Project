@@ -7,3 +7,4 @@ Backend/
 Recordings/
 .vscode/settings.json
 manage app users.py
+manage cards.py

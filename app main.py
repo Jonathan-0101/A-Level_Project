@@ -394,8 +394,88 @@ def manageUsers(window):
     viewWindow.mainloop()
 
 
+def changeStatus(tree, cardList, viewWindow):
+    row = tree.focus()
+    if len(row) == 0:
+        return
+    rowId = int(row.strip("I"))
+    rowId = rowId - 1
+    cardName = cardList[rowId][0]
+    status = cardList[rowId][3]
+    if status == 'Active':
+        conn.execute("UPDATE idCards SET active = 0 WHERE cardName = ?", (cardName,))
+        cur.commit()
+        tree.set(row, column=4, value='Deactivated')
+
+    else:
+        conn.execute("UPDATE idCards SET active = 1 WHERE cardName = ?", (cardName,))
+        cur.commit()
+        tree.set(row, column=4, value='Active')
+
+    popUpWindow("Success", "Card status has been updated", viewWindow)
+
+
 def manageCard(window):
-    print("Manage card")
+    # Creating the windiow for the event display
+    viewWindow = tk.Toplevel(window)
+    viewWindow.geometry("1050x690")
+
+    currentWindow = viewWindow
+
+    # Creating frame layer fo the tkinter tree view window
+    frame = Frame(viewWindow)
+    frame.pack(pady=20)
+
+    # Fixing headings to the top of the table
+    tree = ttk.Treeview(frame, columns=(1, 2, 3, 4), show='headings', height=25)
+    tree.pack(side=LEFT)
+
+    # Adding the scroll bar for events
+    sb = Scrollbar(frame, orient=VERTICAL)
+    sb.pack(side=RIGHT, fill=Y)
+
+    # Attatching the scrollbar to the side fo the table
+    tree.config(yscrollcommand=sb.set)
+    sb.config(command=tree.yview)
+
+    # Creating headings for the table
+    tree["columns"] = ("1", "2", "3", "4")
+    tree['show'] = 'headings'
+    tree.heading("1", text="Card name")
+    tree.heading("2", text="First name")
+    tree.heading("3", text="Last name")
+    tree.heading("4", text="Status")
+
+    # Retriving information from the database
+    cardHolder = conn.execute("SELECT * FROM idCards")
+    cardHolder = conn.fetchall()
+    cardList = []
+
+    # Populating the table with events, with most recent events at the top
+    loopNum = 0
+    for event in cardHolder:
+        cardName = event[2]
+        firstName = event[3]
+        lastName = event[4]
+        status = event[5]
+        if status == 1:
+            status = "Active"
+        else:
+            status = "Deactivated"
+        cardInfo = [cardName, firstName, lastName, status]
+        cardList.append(cardInfo)
+        loopNum += 1
+        pos = ("L", (loopNum))
+        tree.insert("", "end", text=pos, values=(cardName, firstName, lastName, status))
+
+    style = ttk.Style(viewWindow)
+    style.theme_use("default")
+    style.map("Treeview")
+    # Creating button to view video and exit when done
+    Button(viewWindow, text="Enable / Dissable user", command=lambda: [changeStatus(tree, cardList, viewWindow)], pady=10, padx=10).pack()
+    Label(viewWindow, text=" ").pack()
+    Button(viewWindow, text="              Exit              ", command=lambda: [closeWindow(currentWindow)], pady=10, padx=10).pack()
+    viewWindow.mainloop()
 
 
 def main(firstName, email, adminPrivalges, loginTime, lastLogIn):
