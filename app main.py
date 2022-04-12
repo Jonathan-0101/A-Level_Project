@@ -185,8 +185,11 @@ def viewLogs(window):
     # Creating the windiow for the event display
     viewWindow = tk.Toplevel(window)
     viewWindow.geometry("1020x690")
+    viewWindow.title("Event Logs")
 
     currentWindow = viewWindow
+
+    Label(viewWindow, text="Event Log").pack()
 
     # Creating frame layer fo the tkinter tree view window
     frame = Frame(viewWindow)
@@ -333,8 +336,11 @@ def manageUsers(window):
     # Creating the windiow for the event display
     viewWindow = tk.Toplevel(window)
     viewWindow.geometry("1050x690")
+    viewWindow.title("Manage app users")
 
     currentWindow = viewWindow
+
+    Label(viewWindow, text="Manage app users").pack()
 
     # Creating frame layer fo the tkinter tree view window
     frame = Frame(viewWindow)
@@ -419,8 +425,11 @@ def manageCard(window):
     # Creating the windiow for the event display
     viewWindow = tk.Toplevel(window)
     viewWindow.geometry("1050x690")
+    viewWindow.title("Manage card holders")
 
     currentWindow = viewWindow
+
+    Label(viewWindow, text="Manage cards").pack()
 
     # Creating frame layer fo the tkinter tree view window
     frame = Frame(viewWindow)
