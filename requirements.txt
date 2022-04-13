@@ -1,7 +1,7 @@
+Jinja2==3.1.1
 mariadb==1.0.10
 mfrc522==0.0.7
 picamera==1.13
 python-dotenv==0.20.0
 pyttsx3==2.90
-mysql==0.0.3
-mysqlclient==2.1.0
+sv_ttk==0.1

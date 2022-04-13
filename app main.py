@@ -1,5 +1,7 @@
+# Importing the requiered libraries
 import re
 import os
+import ssl
 import time
 import string
 import random
@@ -11,6 +13,11 @@ from tkinter import *
 from tkinter import ttk
 from datetime import datetime
 from dotenv import load_dotenv
+from email.mime.text import MIMEText
+from email.message import EmailMessage
+from email.mime.multipart import MIMEMultipart
+from jinja2 import Environment, FileSystemLoader
+
 
 load_dotenv()
 dbIp = os.getenv("dbIp")
@@ -36,38 +43,6 @@ def popUpWindow(title, message, window):
     button = Button(popUp, text="Okay", command=lambda: [closeWindow(currentWindow)])
     button.pack()
     popUp.mainloop()
-
-
-def emailUser(email, userName, passwordToSend):
-    load_dotenv()
-    gmail_user = os.getenv('emailAccount')
-    gmail_password = os.getenv('emailPassword')
-
-    to = [email]
-    subject = 'Information about your account'
-    body = """\
-    A change has happened with your account on iSpy!
-    Your username is: """ + userName + """
-    Your password is: """ + passwordToSend + """
-    You will have to change your password when you first login.
-    """
-    email_text = """\
-From: %s
-To: %s
-Subject: %s
-
-%s
-    """ % (gmail_user, ", ".join(to), subject, body)
-
-    try:
-        smtp_server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
-        smtp_server.ehlo()
-        smtp_server.login(gmail_user, gmail_password)
-        smtp_server.sendmail(gmail_user, to, email_text)
-        smtp_server.close()
-
-    except Exception as ex:
-        print("Something went wrong….", ex)
 
 
 def accountValidation(acUserName, acFirstName, acLastName, acEmail, acAdminPrivileges, accountCreationWindow, window):
@@ -116,7 +91,46 @@ def accountValidation(acUserName, acFirstName, acLastName, acEmail, acAdminPrivi
     password = passwordToSend.encode()
     password = hashlib.sha3_512(password).hexdigest()
 
-    emailUser(email, userName, passwordToSend)
+    # Create a template Environment
+    env = Environment(loader=FileSystemLoader('templates'))
+
+    # Load the template from the Environment
+    template = env.get_template('accountCreationTemplate.html')
+
+    # Render the template with variables
+    html = template.render(
+        firstname=firstName,
+        username=userName,
+        password=passwordToSend,)
+
+    # Write the template to an HTML file
+    with open('email.html', 'w') as f:
+        f.write(html)
+
+    with open('email.html', 'r') as f:
+        html = f.read()
+
+    load_dotenv()
+    gmail_user = os.getenv('emailAccount')
+    gmail_password = os.getenv('emailPassword')
+
+    # Create a MIMEMultipart class, and set up the From, To, Subject fields
+    email_message = MIMEMultipart()
+    email_message['From'] = gmail_user
+    email_message['To'] = email
+    email_message['Subject'] = 'Account created on iSpy'
+
+    # Attach the html doc defined earlier, as a MIMEText html content type to the MIME message
+    email_message.attach(MIMEText(html, "html"))
+    # Convert it as a string
+    email_string = email_message.as_string()
+
+    # Connect to the Gmail SMTP server and Send Email
+    context = ssl.create_default_context()
+    with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as server:
+        server.login(gmail_user, gmail_password)
+        server.sendmail(gmail_user, email, email_string)
+    os.remove("email.html")
 
     conn.execute("INSERT INTO appUsers(userName, hashedPassword, firstName, lastName, email, adminPrivlages, timeCreated, lastLogIn) VALUES (?,?,?,?,?,?,?,?)", (
                  userName, password, firstName, lastName, email, adminPrivileges, timeCreated, logInTimeForDB))  # Writes the information to the db
@@ -184,12 +198,12 @@ def showSelected(tree, entryLogList):
 def viewLogs(window):
     # Creating the windiow for the event display
     viewWindow = tk.Toplevel(window)
-    viewWindow.geometry("1020x690")
+    viewWindow.geometry("1020x720")
     viewWindow.title("Event Logs")
 
     currentWindow = viewWindow
 
-    Label(viewWindow, text="Event Log").pack()
+    Label(viewWindow, text="Event Log", font=largefont, padx=10, pady=10).pack()
 
     # Creating frame layer fo the tkinter tree view window
     frame = Frame(viewWindow)
@@ -335,12 +349,12 @@ def deleteAccount(tree, userList, viewWindow, window):
 def manageUsers(window):
     # Creating the windiow for the event display
     viewWindow = tk.Toplevel(window)
-    viewWindow.geometry("1050x690")
+    viewWindow.geometry("1050x720")
     viewWindow.title("Manage app users")
 
     currentWindow = viewWindow
 
-    Label(viewWindow, text="Manage app users").pack()
+    Label(viewWindow, text="Manage app users", font=largefont, padx=10, pady=10).pack()
 
     # Creating frame layer fo the tkinter tree view window
     frame = Frame(viewWindow)
@@ -424,12 +438,12 @@ def changeStatus(tree, cardList, viewWindow):
 def manageCard(window):
     # Creating the windiow for the event display
     viewWindow = tk.Toplevel(window)
-    viewWindow.geometry("1050x690")
+    viewWindow.geometry("1050x720")
     viewWindow.title("Manage card holders")
 
     currentWindow = viewWindow
 
-    Label(viewWindow, text="Manage cards").pack()
+    Label(viewWindow, text="Manage cards", font=largefont, padx=10, pady=10).pack()
 
     # Creating frame layer fo the tkinter tree view window
     frame = Frame(viewWindow)
@@ -502,7 +516,7 @@ def main(firstName, email, adminPrivalges, loginTime, lastLogIn):
     changePasswordButton = Button(window, text="    Change password    ", command=lambda: [changePassword(window, userName)], pady=10, padx=10)
     # Exit button
     exitButton = Button(window, text="              Log off             ", command=exit, pady=10, padx=10)
-    # User summary print out
+    # User summary displayed
     userSumarryDisplay = Label(window, text=userSummary,  justify="left", pady=10, padx=10)
     userSumarryDisplay.place(relx=1.0, rely=0.0, anchor='ne')
 
@@ -606,13 +620,12 @@ def login(username, password, window):
         adminPrivalges = cursor[0][5]
         timeCreated = cursor[0][6]
         lastLogIn = cursor[0][7]
-        lastLogIn = lastLogIn.strftime("%d/%m/%y")
 
         if timeCreated == lastLogIn:
-            print("User has to change password")
             changePassword(window, userName)
 
         else:
+            lastLogIn = lastLogIn.strftime("%d/%m/%y")
             now = datetime.now()
             logInTimeForDB = now
             conn.execute("UPDATE appUsers SET lastLogIn = ? WHERE userName = ?", (logInTimeForDB, userName,))
@@ -647,15 +660,53 @@ def resetPassword(userName, window):
         # Encrypting the password
         password = passwordToSend.encode()
         password = hashlib.sha3_512(password).hexdigest()
-        print(password)
         email = cursor[0][4]
         timeToChange = cursor[0][6]
         conn.execute("UPDATE appUsers set hashedPassword = ? WHERE userName = ?", (password, userName,))
         cur.commit()
         conn.execute("UPDATE appUsers set lastLogIn = ? WHERE userName = ?", (timeToChange, userName,))
         cur.commit()
-        print("Done")
-        emailUser(email, userName, passwordToSend)
+
+        # Create a template Environment
+        env = Environment(loader=FileSystemLoader('templates'))
+
+        # Load the template from the Environment
+        template = env.get_template('forgotPasswordTemplate.html')
+
+        # Render the template with variables
+        html = template.render(
+            firstname=cursor[0][2],
+            username=userName,
+            password=passwordToSend,)
+
+        # Write the template to an HTML file
+        with open('email.html', 'w') as f:
+            f.write(html)
+
+        with open('email.html', 'r') as f:
+            html = f.read()
+
+        load_dotenv()
+        gmail_user = os.getenv('emailAccount')
+        gmail_password = os.getenv('emailPassword')
+
+        # Create a MIMEMultipart class, and set up the From, To, Subject fields
+        email_message = MIMEMultipart()
+        email_message['From'] = gmail_user
+        email_message['To'] = email
+        email_message['Subject'] = 'There has been a change to your account on iSpy'
+
+        # Attach the html doc defined earlier, as a MIMEText html content type to the MIME message
+        email_message.attach(MIMEText(html, "html"))
+        # Convert it as a string
+        email_string = email_message.as_string()
+
+        # Connect to the Gmail SMTP server and Send Email
+        context = ssl.create_default_context()
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as server:
+            server.login(gmail_user, gmail_password)
+            server.sendmail(gmail_user, email, email_string)
+        os.remove("email.html")
 
 
 def forgotPassword(window):
@@ -664,6 +715,7 @@ def forgotPassword(window):
     usernameLabel = Label(forgotPasswordWindow, text="User Name", pady=10, padx=10, width=10, anchor='w').grid(row=1, column=1)
     usernameEntry = Entry(forgotPasswordWindow, textvariable=username,  width=30).grid(row=1, column=2)  # Username entry
     emailButton = Button(forgotPasswordWindow, text="     Send recovery password      ", command=lambda: [resetPassword(username, window)]).grid(row=2, column=2)
+    forgotPasswordWindow.mainloop()
 
 
 def loginError(message, window):
