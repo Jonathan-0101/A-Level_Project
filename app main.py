@@ -10,6 +10,7 @@ import mariadb
 import smtplib
 import tkinter as tk
 from tkinter import *
+from mysqlx import Row
 from tkinter import ttk
 from datetime import datetime
 from dotenv import load_dotenv
@@ -301,33 +302,33 @@ def unlockWindow(window):
     lockWindow.mainloop()
 
 
-def delete(userName, currentWindow, window, viewWindow):
+def delete(userName, currentWindow, window, tree, row):
     conn.execute("DELETE FROM appUsers WHERE userName = ?", (userName,))
     cur.commit()
     if user == userName:
         exit()
     else:
+        tree.delete(row)
         closeWindow(currentWindow)
-        closeWindow(viewWindow)
         popUpWindow("Account deleted", "Account has been deleted", window)
 
 
-def deleteAccountConformation(title, message, window, userName, viewWindow):
+def deleteAccountConformation(title, message, window, userName, tree, row):
     confirmWindow = tk.Toplevel(window)
     confirmWindow.geometry('275x175')
     currentWindow = confirmWindow
     confirmWindow.title(title)
     label = Label(confirmWindow, text=message, font=normfont).pack(side="top", fill="x", pady=10)
-    button = Button(confirmWindow, text=" Yes ", command=lambda: [delete(userName, currentWindow, window, viewWindow)], pady=10, padx=9.5).pack(side="top")
+    button = Button(confirmWindow, text=" Yes ", command=lambda: [delete(userName, currentWindow, window, tree, row)], pady=10, padx=9.5).pack(side="top")
     button = Button(confirmWindow, text=" No ", command=lambda: [closeWindow(currentWindow)], pady=10, padx=10.5).pack(side="top")
     confirmWindow.mainloop()
 
 
 def deleteAccount(tree, userList, viewWindow, window):
-    rowId = tree.selection()
-    if len(rowId) == 0:
+    row = tree.selection()
+    if len(row) == 0:
         return
-    rowId = str(rowId[0])
+    rowId = str(row[0])
     rowId = int(rowId.strip("I"))
     rowId = rowId - 1
     if rowId == 0:
@@ -339,11 +340,11 @@ def deleteAccount(tree, userList, viewWindow, window):
     if userName == user:
         message = ("You are about to delete " + userName + "\n As this is your account you will be logged out \n Please confirm account deleation")
         title = "Confirm account deletion"
-        deleteAccountConformation(title, message, window, userName, viewWindow)
+        deleteAccountConformation(title, message, window, userName, tree, row)
     else:
         message = ("You are about to delete " + userName + "\n Please confirm account deleation")
         title = "Confirm account deletion"
-        deleteAccountConformation(title, message, window, userName, viewWindow)
+        deleteAccountConformation(title, message, window, userName, tree, row)
 
 
 def manageUsers(window):

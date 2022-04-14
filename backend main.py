@@ -1,12 +1,18 @@
 # Importing requiered modules
 import os
+import ssl
 import time
 import mariadb
+import smtplib
 import RPi.GPIO as GPIO
 from picamera import PiCamera
 from datetime import datetime
 from dotenv import load_dotenv
 from mfrc522 import SimpleMFRC522
+from email.mime.text import MIMEText
+from email.message import EmailMessage
+from email.mime.multipart import MIMEMultipart
+from jinja2 import Environment, FileSystemLoader
 
 load_dotenv()
 dbIp = os.getenv("dbIp")
@@ -105,6 +111,57 @@ def pir(pin):  # Function for running the events when motion is detected
         conn.execute("INSERT INTO entryLog(authorised, userId, dateTime) VALUES (?,?,?)", (authorised, cardId, dateTime,))
         cur.commit()
         unlock(fileName, camera)  # Calls the function to unlock the door
+        # Create a template Environment
+        cursor = conn.execute("SELECT * FROM idCards WHERE cardId = ?", (cardId,))
+        cursor = conn.fetchall()
+        firstname = cursor[0][3]
+        lastname = cursor[0][4]
+        entryTime = dateTime
+        cursor = conn.execute("SELECT * FROM appUsers WHERE userName = ?", ("security",))
+        cursor = conn.fetchall()
+        user = cursor[0][2]
+        email_to = cursor[0][4]
+        env = Environment(loader=FileSystemLoader('templates'))
+
+        # Load the template from the Environment
+        template = env.get_template('eventTemplate.html')
+
+        # Render the template with variables
+        html = template.render(
+            user=user,
+            firstName=firstname,
+            lastName=lastname,
+            entryTime=entryTime
+        )
+
+        # Write the template to an HTML file
+        with open('email.html', 'w') as f:
+            f.write(html)
+
+        with open('email.html', 'r') as f:
+            html = f.read()
+
+        load_dotenv()
+        gmail_user = os.getenv('emailAccount')
+        gmail_password = os.getenv('emailPassword')
+
+        # Create a MIMEMultipart class, and set up the From, To, Subject fields
+        email_message = MIMEMultipart()
+        email_message['From'] = gmail_user
+        email_message['To'] = email_to
+        email_message['Subject'] = 'Activity has been detected'
+
+        # Attach the html doc defined earlier, as a MIMEText html content type to the MIME message
+        email_message.attach(MIMEText(html, "html"))
+        # Convert it as a string
+        email_string = email_message.as_string()
+
+        # Connect to the Gmail SMTP server and Send Email
+        context = ssl.create_default_context()
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as server:
+            server.login(gmail_user, gmail_password)
+            server.sendmail(gmail_user, email_to, email_string)
+        os.remove("email.html")
 
     else:
         print("Not authorised")

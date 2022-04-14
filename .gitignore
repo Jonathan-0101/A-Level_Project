@@ -1,10 +1,11 @@
-*.env
-email test.py
-database.db
-dbreset.py
+Recordings/
 Frontend/
 Backend/
-Recordings/
 .vscode/settings.json
 manage app users.py
 manage cards.py
+email test.py
+database.db
+dbreset.py
+email.html
+*.env
