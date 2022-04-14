@@ -85,7 +85,6 @@ def pir(pin):  # Function for running the events when motion is detected
     path = os.getcwd()
     # Add the requiered video to the end of the path
     fileName = (path + "/Recordings/" + videoFileName + ".h264")
-
     camera.start_preview(alpha=200)
     time.sleep(0.1)  # Delay for camera preview to start up
     camera.start_recording(fileName)  # Starts the recording
@@ -113,7 +112,7 @@ def pir(pin):  # Function for running the events when motion is detected
         cursor = conn.fetchall()
         firstname = cursor[0][3]
         lastname = cursor[0][4]
-        entryTime = dateTime
+        entryTime = dateTime.strftime("%H:%M:%S %d/%m/%Y")
         cursor = conn.execute("SELECT * FROM appUsers WHERE userName = ?", ("security",))
         cursor = conn.fetchall()
         user = cursor[0][2]
@@ -189,4 +188,3 @@ except KeyboardInterrupt:
 
 finally:
     GPIO.cleanup()
-    
