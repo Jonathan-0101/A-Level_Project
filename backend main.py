@@ -111,7 +111,6 @@ def pir(pin):  # Function for running the events when motion is detected
         # Adds the event into the entry log
         conn.execute("INSERT INTO entryLog(authorised, userId, dateTime) VALUES (?,?,?)", (authorised, cardId, dateTime,))
         cur.commit()
-        unlockMain(fileName, camera)  # Calls the function to unlock the door
         # Create a template Environment
         cursor = conn.execute("SELECT * FROM idCards WHERE cardId = ?", (cardId,))
         cursor = conn.fetchall()
@@ -163,6 +162,7 @@ def pir(pin):  # Function for running the events when motion is detected
             server.login(gmail_user, gmail_password)
             server.sendmail(gmail_user, email_to, email_string)
         os.remove("email.html")
+        unlockMain(fileName, camera)  # Calls the function to unlock the door
 
     else:
         print("Not authorised")
