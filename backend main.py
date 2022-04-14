@@ -38,7 +38,6 @@ Relay_PIN = 4
 def cameraStop(fileName, camera):
     time.sleep(10)
     camera.stop_recording()
-    camera.close()
 
 
 def lock():  # Function for locking the door
@@ -64,8 +63,8 @@ def lockMain(fileName, camera):  # Function for locking the door
 def unlockMain(fileName, camera):  # Function for unlocking the door and stopping the recording
     GPIO.setup(Relay_PIN, GPIO.OUT)
     GPIO.output(Relay_PIN, GPIO.HIGH)
-    time.sleep(10)
     print('Door unlocked')
+    time.sleep(10)
     lockMain(fileName, camera)
 
 
@@ -86,9 +85,7 @@ def pir(pin):  # Function for running the events when motion is detected
     path = os.getcwd()
     # Add the requiered video to the end of the path
     fileName = (path + "/Recordings/" + videoFileName + ".h264")
-    camera = PiCamera()  # Setting the camera that will be used
-    camera.resolution = (1920, 1080)
-    camera.framerate = 25  # Sets the frame rate of the camera
+
     camera.start_preview(alpha=200)
     time.sleep(0.1)  # Delay for camera preview to start up
     camera.start_recording(fileName)  # Starts the recording
@@ -107,9 +104,9 @@ def pir(pin):  # Function for running the events when motion is detected
     if len(cardCheck) == 1:
         print('Authorised')
         authorised = True
-        cardId = cursor[0][0]
+        userId = cursor[0][0]
         # Adds the event into the entry log
-        conn.execute("INSERT INTO entryLog(authorised, userId, dateTime) VALUES (?,?,?)", (authorised, cardId, dateTime,))
+        conn.execute("INSERT INTO entryLog(authorised, userId, dateTime) VALUES (?,?,?)", (authorised, userId, dateTime,))
         cur.commit()
         # Create a template Environment
         cursor = conn.execute("SELECT * FROM idCards WHERE cardId = ?", (cardId,))
@@ -131,8 +128,7 @@ def pir(pin):  # Function for running the events when motion is detected
             user=user,
             firstName=firstname,
             lastName=lastname,
-            entryTime=entryTime
-        )
+            entryTime=entryTime)
 
         # Write the template to an HTML file
         with open('email.html', 'w') as f:
@@ -176,8 +172,10 @@ def pir(pin):  # Function for running the events when motion is detected
 
 
 lock()  # Calling the lock function on statrup to lock the door incase there is a power loss
-camera = PiCamera()
-camera.close()
+global camera
+camera = PiCamera()  # Setting the camera that will be used
+camera.resolution = (1920, 1080)
+camera.framerate = 24  # Sets the frame rate of the camera
 
 GPIO.add_event_detect(14, GPIO.FALLING, callback=pir, bouncetime=100)  # Checks for motion
 
@@ -187,6 +185,8 @@ try:
 
 except KeyboardInterrupt:
     print("\nScript ended")
+    camera.close()
 
 finally:
     GPIO.cleanup()
+    
