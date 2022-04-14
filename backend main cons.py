@@ -45,6 +45,14 @@ def lcLock():
     cur.commit()
 
 
+def lcUnlock():  # Function for unlocking the door and stopping the recording
+    GPIO.setup(Relay_PIN, GPIO.OUT)
+    GPIO.output(Relay_PIN, GPIO.HIGH)
+    print('Door unlocked')
+    time.sleep(30)
+    lcLock()
+
+
 def cameraStop(fileName, camera):
     time.sleep(10)
     camera.stop_recording()
@@ -191,13 +199,12 @@ GPIO.add_event_detect(14, GPIO.FALLING, callback=pir, bouncetime=100)  # Checks 
 try:
     while True:  # Loops the check for motion
         # Retriveing the doorStatus value from the table
-        cursor = conn.execute("SELECT * FROM door Status")
-        cursor = conn.fetall()
+        cursor = conn.execute("SELECT * FROM doorStatus")
+        cursor = conn.fetchall()
         # Checks if the value is equal to 1 (whether it should open)
         if cursor[0][0] == 1:
             # Calls unlock function and then locking function
-            unlock()
-            lcLock()
+            lcUnlock()
             # Adds a time delay before the table is checked again
             time.sleep(5)
         else:
