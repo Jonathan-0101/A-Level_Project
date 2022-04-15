@@ -1,0 +1,63 @@
+<head>
+    <title>Someone has entered</title>
+    <style>
+        body {
+            background-color: #ffffff;
+        }
+
+        h1 {
+            text-align: center;
+            font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+            font-size: 40px;
+            color: #006699;
+        }
+
+        h2 {
+            text-align: left;
+            font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+            font-size: 30px;
+            color: #006699;
+        }
+
+        p {
+            font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+            font-size: 20px;
+            color: #006699;
+        }
+
+        table, tr, th, td{
+            width: 50%;
+            border : 1px solid black;
+            padding: 5px;
+            border-collapse: collapse;
+            font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+            font-size: 20px;
+            color: #006699;
+        }
+
+    </style>
+</head>
+
+<body>
+    <h1>Daily activity summary</h1>
+    <p><b>Hi there,</b></p>
+    <p>Here is a rundown of the entrances that happened over the past day.</p>
+    <table>
+        <tr>
+            <th>User</th>
+            <th>Date/Time</th>
+        </tr>
+        </tr>
+        {% for entry in entries %}
+        <tr>
+            <td>{{entry.name}}</td>
+            <td>{{entry.dateTime}}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    <p>Regards,
+        <br>
+        iSpy team
+</body>
+
+</html>

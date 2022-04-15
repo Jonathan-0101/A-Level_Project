@@ -11,6 +11,7 @@ from dotenv import load_dotenv
 from mfrc522 import SimpleMFRC522
 from email.mime.text import MIMEText
 from email.message import EmailMessage
+from datetime import datetime, timedelta
 from email.mime.multipart import MIMEMultipart
 from jinja2 import Environment, FileSystemLoader
 
@@ -33,6 +34,79 @@ print('Sensor initializing . . .')
 time.sleep(15)  # Give sensor time to start-up, 15 seconds
 print('Active')
 Relay_PIN = 4
+
+
+def emailSummary():
+    jinjaVar = {'entries': []}
+
+    entryLog = conn.execute("SELECT * FROM entryLog WHERE authorised = 1 and dateTime > DATE_SUB(NOW(), INTERVAL 1 DAY)")
+    entryLog = conn.fetchall()
+
+    for entry in entryLog:
+        details = conn.execute("SELECT * FROM idCards WHERE id = ?", (entry[2],))
+        details = conn.fetchall()
+        firstNmae = details[0][3]
+        lastName = details[0][4]
+        name = firstNmae + " " + lastName
+        dateTime = entry[3].strftime("%H:%M:%S %d/%m/%Y")
+        jinjaVar['entries'].append({'name': name, 'dateTime': dateTime})
+
+    # Create a template Environment
+    env = Environment(loader=FileSystemLoader('templates'))
+
+    # Load the template from the Environment
+    template = env.get_template('summaryTemplate.html')
+
+    # Render the template with variables
+    html = template.render(jinjaVar)
+
+    # Write the template to an HTML file
+    with open('email.html', 'w') as f:
+        f.write(html)
+
+    with open('email.html', 'r') as f:
+        html = f.read()
+
+    email = "jonathan.woolf.01@gmail.com"
+    emails = conn.execute("SELECT email FROM appUsers")
+    emails = conn.fetchall()
+    recipients = []
+    for email in emails:
+        recipients.append(email[0])
+
+    load_dotenv()
+    gmail_user = os.getenv('emailAccount')
+    gmail_password = os.getenv('emailPassword')
+
+    # Create a MIMEMultipart class, and set up the From, To, Subject fields
+    email_message = MIMEMultipart()
+    email_message['From'] = gmail_user
+    email_message['To'] = ", ".join(recipients)
+    email_message['Subject'] = 'Daily activity summary'
+
+    # Attach the html doc defined earlier, as a MIMEText html content type to the MIME message
+    email_message.attach(MIMEText(html, "html"))
+    # Convert it as a string
+    email_string = email_message.as_string()
+
+    # Connect to the Gmail SMTP server and Send Email
+    context = ssl.create_default_context()
+    with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as server:
+        server.login(gmail_user, gmail_password)
+        server.sendmail(gmail_user, email, email_string)
+    os.remove("email.html")
+
+
+def updateSendTime():
+    print("Func run")
+    baseTime = 210000
+    sendDay = datetime.now()
+    sendDay = sendDay + timedelta(days=1)
+    sendDay = sendDay.strftime("%Y/%m/%d")
+    sendDay = int(sendDay.replace("/", ""))*1000000
+    sendTime = sendDay+baseTime
+    print(sendTime)
+    return sendTime
 
 
 def lcLock():
@@ -193,11 +267,22 @@ global camera
 camera = PiCamera()  # Setting the camera that will be used
 camera.resolution = (1920, 1080)
 camera.framerate = 24  # Sets the frame rate of the camera
+sendTime = 00000000000000
 
 GPIO.add_event_detect(14, GPIO.FALLING, callback=pir, bouncetime=100)  # Checks for motion
 
 try:
     while True:  # Loops the check for motion
+        # Checks if it is time to send the summary out
+        timeCheck = datetime.now()
+        timeCheck = timeCheck.strftime("%Y/%m/%d %H:%M:%S")
+        timeCheck = timeCheck.replace(":", "")
+        timeCheck = timeCheck.replace("/", "")
+        timeCheck = int(timeCheck.replace(" ", ""))
+        if timeCheck > sendTime:
+            sendTime = updateSendTime()
+            print("Time to send")
+            emailSummary()
         # Retriveing the doorStatus value from the table
         cursor = conn.execute("SELECT * FROM doorStatus")
         cursor = conn.fetchall()

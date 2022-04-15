@@ -8,4 +8,6 @@ email test.py
 database.db
 dbreset.py
 email.html
+summ.py
+em.py
 *.env
