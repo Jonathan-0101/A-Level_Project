@@ -178,6 +178,90 @@ def createAccount(window):
     accountCreationWindow.mainloop()
 
 
+def sendEmail(subject, message, currentWindow, emailApp):
+    print("Sending Email...")
+    # Create a template Environment
+    env = Environment(loader=FileSystemLoader('templates'))
+
+    # Load the template from the Environment
+    template = env.get_template('announcementTemplate.html')
+
+    # Render the template with variables
+    html = template.render(
+        textInput=message,
+        usersName=user,)
+
+    # Write the template to an HTML file
+    with open('email.html', 'w') as f:
+        f.write(html)
+
+    with open('email.html', 'r') as f:
+        html = f.read()
+
+    load_dotenv()
+    gmail_user = os.getenv('emailAccount')
+    gmail_password = os.getenv('emailPassword')
+
+    emails = conn.execute("SELECT email FROM appUsers")
+    emails = conn.fetchall()
+    recipients = []
+    for email in emails:
+        recipients.append(email[0])
+
+    # Create a MIMEMultipart class, and set up the From, To, Subject fields
+    email_message = MIMEMultipart()
+    email_message['From'] = gmail_user
+    email_message['To'] = ", ".join(recipients)
+    email_message['Subject'] = subject
+
+    # Attach the html doc defined earlier, as a MIMEText html content type to the MIME message
+    email_message.attach(MIMEText(html, "html"))
+    # Convert it as a string
+    email_string = email_message.as_string()
+
+    # Connect to the Gmail SMTP server and Send Email
+    context = ssl.create_default_context()
+    with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as server:
+        server.login(gmail_user, gmail_password)
+        server.sendmail(gmail_user, email, email_string)
+    os.remove("email.html")
+    emailApp.destroy()
+    currentWindow.destroy()
+
+
+def emailConfirm(window, emailApp, subject, message):
+    print("Sending Email...")
+    subject = subject.get()
+    message = message.get("1.0", END)
+    confirmWindow = tk.Toplevel(window)
+    confirmWindow.geometry('275x175')
+    currentWindow = confirmWindow
+    confirmWindow.title("Confirm Email")
+    label = Label(confirmWindow, text="Do you want to send the email?", font=normfont).pack(side="top", fill="x", pady=10)
+    button = Button(confirmWindow, text=" Yes ", command=lambda: [sendEmail(subject, message, currentWindow, emailApp)], pady=10, padx=9.5).pack(side="top")
+    button = Button(confirmWindow, text=" No ", command=lambda: [closeWindow(currentWindow)], pady=10, padx=10.5).pack(side="top")
+    confirmWindow.mainloop()
+
+
+def appEmail(window):
+    emailApp = Toplevel(window)
+    emailApp.geometry("1050x720")
+    emailApp.title("In-App Email")
+    Label(emailApp, text="Email users", font=largefont, padx=10, pady=10).pack()
+    Label(emailApp, text="Subject:", font=largefont).pack(padx=10, pady=10, anchor=NW)
+    subject = StringVar()
+    subjectEntry = Entry(emailApp, textvariable=subject, width=160, font=largefont).pack(padx=10, pady=10, anchor=NW)
+    Label(emailApp, text="Message:", font=largefont).pack(padx=10, pady=10, anchor=NW)
+    message = tk.Text(emailApp, height=22.5, width=160, font=largefont)
+    scroll = tk.Scrollbar(emailApp)
+    message.configure(yscrollcommand=scroll.set)
+    message.pack(padx=10, pady=10, anchor=NW)
+    scroll.config(command=message.yview)
+    Button(emailApp, text="Send", font=largefont, width=10, command=lambda: emailConfirm(window, emailApp, subject, message)).pack(padx=10, pady=10)
+    Button(emailApp, text="Exit", font=largefont, width=10, command=lambda: emailApp.destroy()).pack(padx=10, pady=10)
+    emailApp.mainloop()
+
+
 def showSelected(tree, entryLogList):
     # Retriving the row id of the event
     rowId = tree.selection()
@@ -506,35 +590,38 @@ def main(firstName, email, adminPrivalges, loginTime, lastLogIn):
     # Creating the user summary
     userSummary = ('Username: ' + user + '\nFirst name: ' + firstName + '\nEmail: ' + email + '\nLog in time: ' + loginTime + '\nLast Log In: ' + lastLogIn)
     window = tk.Tk()  # Creating window
-    window.geometry('360x500')
+    window.geometry('360x700')
     window.title('Main menu')
     userName = user
     # View logs button
-    viewLogButton = Button(window, text="           View Logs           ", command=lambda: [viewLogs(window)], pady=10, padx=10)
+    viewLogButton = Button(window, text="View Logs", width=20, font=largefont, command=lambda: [viewLogs(window)], pady=10, padx=10)
     # Unlock door button
-    unlockDoorButton = Button(window, text="         Unlock door         ", command=lambda: [unlockWindow(window)], pady=10, padx=10)
+    unlockDoorButton = Button(window, text="Unlock door", width=20, font=largefont, command=lambda: [unlockWindow(window)], pady=10, padx=10)
     # Change password button
-    changePasswordButton = Button(window, text="    Change password    ", command=lambda: [changePassword(window, userName)], pady=10, padx=10)
+    changePasswordButton = Button(window, text="Change password", width=20, font=largefont, command=lambda: [changePassword(window, userName)], pady=10, padx=10)
     # Exit button
-    exitButton = Button(window, text="              Log off             ", command=exit, pady=10, padx=10)
+    exitButton = Button(window, text="Log off", width=20, font=largefont, command=exit, pady=10, padx=10)
     # User summary displayed
-    userSumarryDisplay = Label(window, text=userSummary,  justify="left", pady=10, padx=10)
+    userSumarryDisplay = Label(window, text=userSummary, font=normfont, justify="left", pady=10, padx=10)
     userSumarryDisplay.place(relx=1.0, rely=0.0, anchor='ne')
 
     if adminPrivalges == True:  # Function that adds in the extra features for admin users
         # Create account button
-        createAccountButton = Button(window, text="      Create Account      ", command=lambda: [createAccount(window)], pady=10, padx=10)
+        createAccountButton = Button(window, text="Create Account", width=20, font=largefont, command=lambda: [createAccount(window)], pady=10, padx=10)
         # Manage users button
-        manageUsersButton = Button(window, text="   Manage App Users   ", command=lambda: [manageUsers(window)], pady=10, padx=10)
+        manageUsersButton = Button(window, text="Manage App Users", width=20, font=largefont, command=lambda: [manageUsers(window)], pady=10, padx=10)
         # Manage card button
-        manageCardButton = Button(window, text=" Manage Card Holders ", command=lambda: [manageCard(window)], pady=10, padx=10)
+        manageCardButton = Button(window, text="Manage Card Holders", width=20, font=largefont, command=lambda: [manageCard(window)], pady=10, padx=10)
+        # Email users button
+        emailUsersButton = Button(window, text="Email Users", width=20, font=largefont, command=lambda: [appEmail(window)], pady=10, padx=10)
         # Placing the buttons
-        viewLogButton.place(relx=0.5, rely=0.3, anchor='center')
-        unlockDoorButton.place(relx=0.5, rely=0.4, anchor='center')
-        createAccountButton.place(relx=0.5, rely=0.5, anchor='center')
-        changePasswordButton.place(relx=0.5, rely=0.6, anchor='center')
-        manageUsersButton.place(relx=0.5, rely=0.7, anchor='center')
-        manageCardButton.place(relx=0.5, rely=0.8, anchor='center')
+        viewLogButton.place(relx=0.5, rely=0.2, anchor='center')
+        unlockDoorButton.place(relx=0.5, rely=0.3, anchor='center')
+        createAccountButton.place(relx=0.5, rely=0.4, anchor='center')
+        changePasswordButton.place(relx=0.5, rely=0.5, anchor='center')
+        manageUsersButton.place(relx=0.5, rely=0.6, anchor='center')
+        manageCardButton.place(relx=0.5, rely=0.7, anchor='center')
+        emailUsersButton.place(relx=0.5, rely=0.8, anchor='center')
         exitButton.place(relx=0.5, rely=0.9, anchor='center')
 
     else:  # Puts the buttons in their location if the user is not an admin
@@ -746,12 +833,12 @@ password = StringVar()
 passwordLabel = Label(window, text="Password", pady=10, padx=10, width=10, anchor='w').grid(row=2, column=1)
 passwordEntry = Entry(window, textvariable=password, show='*', width=30).grid(row=2, column=2)  # Password entry
 # Login button
-loginButton = Button(window, text="              Login              ", padx=5, pady=5, command=lambda: [login(username, password, window)]).grid(row=3, column=2)
+loginButton = Button(window, text="Login", width=15, padx=5, pady=5, command=lambda: [login(username, password, window)]).grid(row=3, column=2)
 spacer2 = Label(window, text=" ").grid(row=4, column=2)
 # Forgot password button
-forgotPasswordButton = Button(window, text="    Forgot password    ", padx=5, pady=5, command=lambda: [forgotPassword(window)]).grid(row=5, column=2)
+forgotPasswordButton = Button(window, text="Forgot password", width=15, padx=5, pady=5, command=lambda: [forgotPassword(window)]).grid(row=5, column=2)
 spacer3 = Label(window, text=" ").grid(row=6, column=2)
 # Exit button
-exitButton = Button(window, text="                Exit               ", padx=5, pady=5, command=exit).grid(row=7, column=2)
+exitButton = Button(window, text="Exit", width=15, padx=5, pady=5, command=exit).grid(row=7, column=2)
 spacer3 = Label(window, text=" ").grid(row=8, column=2)
 window.mainloop()
