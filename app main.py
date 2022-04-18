@@ -19,14 +19,14 @@ from email.message import EmailMessage
 from email.mime.multipart import MIMEMultipart
 from jinja2 import Environment, FileSystemLoader
 
-
+# Retreaving the database ip, username and password from the env file
 load_dotenv()
 dbIp = os.getenv("dbIp")
 dbUserName = os.getenv('dbUserName')
 dbPassword = os.getenv('dbPassword')
 
+# Connecting to the database
 cur = mariadb.connect(host=dbIp, database='iSpy', user=dbUserName, password=dbPassword)
-
 conn = cur.cursor()
 
 
@@ -635,37 +635,42 @@ def main(firstName, email, adminPrivalges, loginTime, lastLogIn):
 def updatePassword(window, updateWindow, password, confirmPassword, userName):
     password = password.get()
     confirmPassword = confirmPassword.get()
+    # Checks that the password and confirm password fields have inputs
     if 0 in [len(password), len(confirmPassword)]:
         message = "Please fill the inputs"
         title = "Alert!"
         popUpWindow(title, message, window)
-
+    # Checks that the password and confirm password fields are the same
     elif password != confirmPassword:
         message = "Passwords do not match"
         title = "Alert!"
         popUpWindow(title, message, window)
-
+    # Checks if the passowrd meets minimum complexity requirements
     elif len(password) < 6:
         message = "Password must be at least 6 characters"
         title = "Alert!"
         popUpWindow(title, message, window)
 
     else:
+        # Hashing passowrd and adding it to the database
         password = password.encode()
         password = hashlib.sha3_512(password).hexdigest()
         conn.execute("UPDATE appUsers set hashedPassword = ? WHERE userName = ?", (password, userName,))
         cur.commit()
         now = datetime.now()
         logInTimeForDB = now
+        # Updating the last log in time so user can log in
         conn.execute("UPDATE appUsers SET lastLogIn = ? WHERE userName = ?", (logInTimeForDB, userName,))
         cur.commit()
-        message = "Password updated successfully"
+        # Calling a popup window informing the user that the password has been changed
+        message = "Password updated successfully \nPlease log in again"
         title = "Alert!"
         updateWindow.destroy()
         popUpWindow(title, message, window)
 
 
 def changePassword(window, userName):
+    # GUI for the user to change their password
     updateWindow = Toplevel(window)
     updateWindow.geometry('347x195')
     updateWindow.title('Update password')
@@ -682,24 +687,29 @@ def changePassword(window, userName):
 
 
 def login(username, password, window):
+    # Retrieving the information from the GUI
     userName = username.get()
     passwordToEncode = password.get()
     passwordToHash = passwordToEncode.encode()
     password = hashlib.sha3_512(passwordToHash).hexdigest()
 
+    # Checking if the inputs are empty
     if 0 in (len(userName), len(passwordToEncode)):
         message = 'Please fill in the inputs'
         loginError(message, window)
 
+    # Checks if an account with the username exists
     cursor = conn.execute("SELECT * FROM appUsers Where userName = ?", (userName,))
     cursor = conn.fetchall()
 
+    # Calls a pop up window if the account does not exist
     if len(cursor) == 0:
         message = 'Username or password incorrect'
         loginError(message, window)
 
     passwordToCheck = cursor[0][1]
 
+    # Checks if the password is correct
     if password == passwordToCheck:
         global user
         user = userName
@@ -709,13 +719,16 @@ def login(username, password, window):
         timeCreated = cursor[0][6]
         lastLogIn = cursor[0][7]
 
+        # Checks if the user needs to reset their password
         if timeCreated == lastLogIn:
             changePassword(window, userName)
 
+        # Logs the user in
         else:
             lastLogIn = lastLogIn.strftime("%d/%m/%y")
             now = datetime.now()
             logInTimeForDB = now
+            # Updates the last log in time
             conn.execute("UPDATE appUsers SET lastLogIn = ? WHERE userName = ?", (logInTimeForDB, userName,))
             cur.commit()
             loginTime = now.strftime("%H:%M")
@@ -731,6 +744,7 @@ def login(username, password, window):
                 window.destroy()
                 main(firstName, email, adminPrivalges, loginTime, lastLogIn)
 
+    # Calls a pop up window if the password is incorrect
     else:
         message = 'Username or password incorrect'
         loginError(message, window)
