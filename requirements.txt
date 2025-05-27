@@ -1,4 +1,4 @@
-Jinja2==3.1.5
+Jinja2==3.1.6
 mariadb==1.0.10
 mfrc522==0.0.7
 mysql_connector_python==9.1.0
