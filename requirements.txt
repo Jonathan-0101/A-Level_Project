@@ -4,6 +4,6 @@ mfrc522==0.0.7
 mysql_connector_python==9.1.0
 mysqlx==1.1.4
 picamera==1.13
-python-dotenv==0.20.0
+python-dotenv==1.2.2
 pyttsx3==2.90
 sv_ttk==0.1
